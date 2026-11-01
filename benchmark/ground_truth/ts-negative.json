@@ -1,0 +1,43 @@
+{
+  "case": "ts-negative",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "repo-helper"
+  ],
+  "tools": [
+    "wipe",
+    "git_status",
+    "run_action"
+  ],
+  "bindings": [
+    [
+      "repo-helper",
+      "git_status"
+    ],
+    [
+      "repo-helper",
+      "run_action"
+    ]
+  ],
+  "paths": [
+    [
+      "-",
+      "wipe",
+      "filesystem_delete",
+      "inventory_only"
+    ],
+    [
+      "repo-helper",
+      "git_status",
+      "process_execution",
+      "bound_capability"
+    ]
+  ],
+  "expected_unknowns": [
+    [
+      "repo-helper",
+      "run_action"
+    ]
+  ],
+  "notes": "Unbound tool, fixed command, computed dispatch; __tests__ excluded."
+}

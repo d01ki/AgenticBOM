@@ -101,6 +101,9 @@ for _p in ("langchain_community.tools", "langchain_community.tools.requests.tool
 for _p in ("agents", "agents.tool"):
     LIBRARY_TOOLS[f"{_p}.LocalShellTool"] = PROCESS_EXECUTION
     LIBRARY_TOOLS[f"{_p}.ShellTool"] = PROCESS_EXECUTION
+# OpenAI Agents JS
+LIBRARY_TOOLS["@openai/agents.shellTool"] = PROCESS_EXECUTION
+LIBRARY_TOOLS["@openai/agents.localShellTool"] = PROCESS_EXECUTION
 
 # Provider-hosted tools: executed by the model provider, not on the application host.
 HOSTED_TOOLS = {f"agents.{n}" for n in ("WebSearchTool", "FileSearchTool", "CodeInterpreterTool", "ImageGenerationTool")}

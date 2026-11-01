@@ -115,6 +115,13 @@ def _finding(kind: str, severity: str, key: str, message: str, bom: str, securit
     return f
 
 
+def _slot(p: dict[str, Any]) -> tuple | None:
+    op = p.get("operation")
+    if not op or not p.get("tool"):
+        return None
+    return (p.get("entry"), tuple(p.get("delegation") or []), p.get("tool"), p.get("operation_category"), op.rsplit(":", 1)[0])
+
+
 def _sev_for_new(p: dict[str, Any]) -> str:
     c = p["classification"]
     if c == POTENTIALLY_EXPOSED:
@@ -137,8 +144,20 @@ def diff_reports(base: dict[str, Any], head: dict[str, Any], base_label: str = "
     findings: list[dict[str, Any]] = []
     bp = {p["key"]: p for p in base["paths"]}
     hp = {p["key"]: p for p in head["paths"]}
+    matched = [(k, k) for k in sorted(set(bp) & set(hp))]
+    # Same capability slot (entry, delegation, tool, category, enclosing function) with a changed callee
+    # (e.g. exec -> execFile) is one path that changed, not one removed + one new.
+    only_old = {k: _slot(bp[k]) for k in set(bp) - set(hp)}
+    only_new = {k: _slot(hp[k]) for k in set(hp) - set(bp)}
+    for slot in sorted({s for s in only_old.values() if s} & {s for s in only_new.values() if s}, key=str):
+        olds = [k for k, s in only_old.items() if s == slot]
+        news = [k for k, s in only_new.items() if s == slot]
+        if len(olds) == 1 and len(news) == 1:
+            matched.append((olds[0], news[0]))
+    paired_old = {o for o, _n in matched}
+    paired_new = {n for _o, n in matched}
 
-    for k in sorted(set(hp) - set(bp)):
+    for k in sorted(set(hp) - paired_new):
         p = hp[k]
         c = p["classification"]
         if c == INVENTORY_ONLY:
@@ -154,14 +173,14 @@ def diff_reports(base: dict[str, Any], head: dict[str, Any], base_label: str = "
             bstat, f"absent → {c}", None, _path_summary(p),
             gate_eligible=p["resolution"] == CONFIRMED,
         ))
-    for k in sorted(set(bp) - set(hp)):
+    for k in sorted(set(bp) - paired_old):
         p = bp[k]
         if p["classification"] == INVENTORY_ONLY:
             continue
         findings.append(_finding("capability_removed", "info", k, f"Path removed: {_label(p)} (was {p['classification']})",
                                  bstat, f"{p['classification']} → absent", _path_summary(p), None, False))
-    for k in sorted(set(bp) & set(hp)):
-        o, n = bp[k], hp[k]
+    for ko, k in sorted(matched):
+        o, n = bp[ko], hp[k]
         oc, nc = o["classification"], n["classification"]
         if nc == PATH_UNKNOWN and oc != PATH_UNKNOWN:
             findings.append(_finding("review_required", "info", k, f"Path became unresolved: {_label(n)}", bstat, f"{oc} → unknown",

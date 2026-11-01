@@ -119,6 +119,55 @@
       "ground_truth": "benchmark/ground_truth/class-receiver.json"
     },
     {
+      "id": "ts-same-bom-baseline",
+      "type": "scan",
+      "path": "examples/ts-same-bom-new-exposure/baseline",
+      "label": "negative (TS)",
+      "ground_truth": "benchmark/ground_truth/ts-same-bom-baseline.json"
+    },
+    {
+      "id": "ts-same-bom-candidate",
+      "type": "scan",
+      "path": "examples/ts-same-bom-new-exposure/candidate",
+      "label": "positive (TS)",
+      "ground_truth": "benchmark/ground_truth/ts-same-bom-candidate.json"
+    },
+    {
+      "id": "ts-same-bom-fixed",
+      "type": "scan",
+      "path": "examples/ts-same-bom-new-exposure/fixed",
+      "label": "positive guarded (TS)",
+      "ground_truth": "benchmark/ground_truth/ts-same-bom-fixed.json"
+    },
+    {
+      "id": "ts-vercel-next",
+      "type": "scan",
+      "path": "benchmark/cases/ts-vercel-next",
+      "label": "positive (TS, Vercel AI)",
+      "ground_truth": "benchmark/ground_truth/ts-vercel-next.json"
+    },
+    {
+      "id": "ts-mcp-server",
+      "type": "scan",
+      "path": "benchmark/cases/ts-mcp-server",
+      "label": "positive (TS, MCP SDK)",
+      "ground_truth": "benchmark/ground_truth/ts-mcp-server.json"
+    },
+    {
+      "id": "ts-express-handoff",
+      "type": "scan",
+      "path": "benchmark/cases/ts-express-handoff",
+      "label": "positive (TS, delegation/class)",
+      "ground_truth": "benchmark/ground_truth/ts-express-handoff.json"
+    },
+    {
+      "id": "ts-negative",
+      "type": "scan",
+      "path": "benchmark/cases/ts-negative",
+      "label": "negative + unknown (TS)",
+      "ground_truth": "benchmark/ground_truth/ts-negative.json"
+    },
+    {
       "id": "drift-same-bom-1",
       "type": "drift",
       "base": "examples/same-bom-new-exposure/baseline",
@@ -157,6 +206,22 @@
       "head": "examples/same-bom-new-exposure/baseline",
       "label": "drift",
       "ground_truth": "benchmark/ground_truth/drift-identical.json"
+    },
+    {
+      "id": "drift-ts-same-bom-1",
+      "type": "drift",
+      "base": "examples/ts-same-bom-new-exposure/baseline",
+      "head": "examples/ts-same-bom-new-exposure/candidate",
+      "label": "drift (TS)",
+      "ground_truth": "benchmark/ground_truth/drift-ts-same-bom-1.json"
+    },
+    {
+      "id": "drift-ts-same-bom-2",
+      "type": "drift",
+      "base": "examples/ts-same-bom-new-exposure/candidate",
+      "head": "examples/ts-same-bom-new-exposure/fixed",
+      "label": "drift (TS)",
+      "ground_truth": "benchmark/ground_truth/drift-ts-same-bom-2.json"
     }
   ]
 }

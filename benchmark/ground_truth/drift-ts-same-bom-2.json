@@ -1,0 +1,15 @@
+{
+  "case": "drift-ts-same-bom-2",
+  "annotator": "tool author (not independent)",
+  "bom_delta": "unchanged",
+  "findings": [
+    [
+      "capability_removed",
+      "run_diagnostic"
+    ],
+    [
+      "capability_removed",
+      "support-triage"
+    ]
+  ]
+}

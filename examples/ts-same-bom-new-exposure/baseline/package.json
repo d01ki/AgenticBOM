@@ -1,0 +1,9 @@
+{
+  "name": "support-triage-ts",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@openai/agents": "0.1.0",
+    "zod": "3.25.0"
+  }
+}

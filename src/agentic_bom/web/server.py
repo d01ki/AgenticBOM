@@ -39,7 +39,7 @@ LOOPBACK_HOSTS = ("127.0.0.1", "localhost", "::1")
 MAX_BODY = 64 * 1024
 MAX_RUNS = 50
 COOKIE = "aem_token"
-SCENARIOS = ("same-bom-new-exposure", "mcp-tool-schema-drift")
+SCENARIOS = ("same-bom-new-exposure", "mcp-tool-schema-drift", "ts-same-bom-new-exposure")
 _RUN_ID = re.compile(r"^[0-9a-f]{12}$")
 
 

@@ -11,6 +11,16 @@
 - **Library tools** (`analyzers/operations.py: LIBRARY_TOOLS`, `LIBRARY_TOOLKITS`): modelled from documented behaviour as a parameter-controlled operation on `<model-supplied>` arguments, with `inferred_limited` and scope `library_behaviour_model`. `FileManagementToolkit(selected_tools=[...]).get_tools()` is expanded and filtered by `selected_tools` when that is a literal.
 - **Hosted tools**: provider-hosted tools, and `ShellTool(environment={"type": "container_auto"|"container_reference"})`, are bound with no host operation. A non-literal `environment` gives `unknown`.
 
+### TypeScript / JavaScript
+
+- **Parser** (`detectors/ts_parser.py`): a regex tokenizer plus a recursive-descent parser for statements and expressions. Type syntax is skipped: annotations, `as`/`satisfies`, generics, `interface`, `type`, `enum`, `declare`. Error recovery skips one statement at a time and counts the region.
+- **Function units**: function declarations, `const f = () => {}`, class methods, object-literal methods, `tool({execute})` handlers, MCP handlers and route handlers are each analysed as a unit. Callbacks passed inline (`.map(x => …)`, `setTimeout(() => …)`) are analysed in place, with the enclosing environment. Array-method callbacks inherit the receiver's taint.
+- **Tools**: `tool({...})` from `@openai/agents` or `ai`. Vercel provider tools (`anthropic.tools.bash_…({ execute })`) are treated as local tools when they have an `execute`, and as provider-hosted otherwise. The MCP TS SDK forms `server.tool(name, [desc], shape, handler)` and `server.registerTool(name, {description, inputSchema, annotations}, handler)` are recognised. Contract parameters come from `z.object({...})`, raw zod shapes or JSON-schema `properties`. A tool without `execute` is client-executed: it is bound but has no server-side operation.
+- **Agents**: `new Agent({...})` (OpenAI Agents JS, AI SDK `Experimental_Agent`) and `generateText/streamText/generateObject/streamObject({ tools, system, prompt|messages })`. `system`/`instructions` count as privileged instructions; `prompt`/`messages` count as user-role input.
+- **Sources**: parameters of `app.get/post/...('/path', handler)` and of Next.js `app/**/route.ts` exports (`GET`, `POST`, …); `process.argv`, `process.stdin`, `readFileSync(0)`, `fetch()` GET responses. One-level call-site provenance works the same way as for Python.
+- **Sinks**: `child_process.exec/execSync/spawn/execFile/fork` (also through `promisify`), `execa`, `eval`, `new Function`, `vm.*`, `fs.*` writes and deletes (`fs/promises`, `fs-extra`), `fetch` with a state-changing `method`, `axios/got/ky.post/put/patch/delete`, `process.env.*`, AWS SDK v3 `client.send(new XxxCommand(...))` (non-read commands), and computed calls `obj[x](...)` (→ `unknown`).
+- **Guards**: `ALLOWED.includes(x)` / `.has(x)` / `/re/.test(x)` and `x === 'lit'` count as `known`. Other predicates count as `unknown`. A value that passes through a project helper that throws under a condition (validator-style) gets guard `unknown`, never `absent`.
+
 ## 2. Taint and trust flow (bounded, deterministic)
 
 Each tool function is walked statement by statement. Tool parameters start as tainted (`param:<name>`). Taint propagates through assignments, f-strings, `+`, `%`/`.format` on tainted receivers, containers, comprehensions and method calls on tainted objects.
@@ -76,6 +86,8 @@ otherwise                                -> operation_path (medium)
 | AEM-D004 | `tool_contract_changed` | same tool ID, different contract fingerprint. Severity is medium or high only when a *newly added parameter* reaches a sensitive operation. Description-only changes get `review_status=review_required` and are never gate-eligible. |
 | AEM-D005 | `capability_removed` | a path disappears, drops in rank or gains a known guard, or a trust flow is removed |
 | AEM-D006 | `review_required` | a new or changed path is `unknown`, or provenance becomes unknown. Severity is always `info`. |
+
+**Capability slot matching**: when a path key disappears and a new one appears with the same entry, delegation, tool, operation category and enclosing function (for example `exec` replaced by `execFile` in the same helper), the two are compared as one changed path. This avoids reporting a fix as removed + new.
 
 **BOM delta** compares the component inventory: agents (name, framework, model), models, tools (identity, name, framework), MCP servers and packages (version spec). It deliberately leaves out prompt text and tool contracts, which are diffed separately above.
 

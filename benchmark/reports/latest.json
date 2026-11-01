@@ -53,8 +53,8 @@
       "id": "same-bom-baseline",
       "label": "negative",
       "ok": true,
-      "peak_bytes": 1077593,
-      "seconds": 0.0197,
+      "peak_bytes": 1079337,
+      "seconds": 0.0216,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -110,8 +110,8 @@
       "id": "same-bom-candidate",
       "label": "positive",
       "ok": true,
-      "peak_bytes": 1051254,
-      "seconds": 0.0223,
+      "peak_bytes": 1051318,
+      "seconds": 0.0235,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -167,8 +167,8 @@
       "id": "same-bom-fixed",
       "label": "positive (guarded)",
       "ok": true,
-      "peak_bytes": 1051297,
-      "seconds": 0.0223,
+      "peak_bytes": 1051361,
+      "seconds": 0.0224,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -224,8 +224,8 @@
       "id": "mcp-candidate",
       "label": "positive",
       "ok": true,
-      "peak_bytes": 1029903,
-      "seconds": 0.0214,
+      "peak_bytes": 1029967,
+      "seconds": 0.0217,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -282,7 +282,7 @@
       "label": "positive",
       "ok": true,
       "peak_bytes": 1011540,
-      "seconds": 0.0093,
+      "seconds": 0.0102,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -339,7 +339,7 @@
       "label": "positive",
       "ok": true,
       "peak_bytes": 1011500,
-      "seconds": 0.0117,
+      "seconds": 0.0129,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -402,8 +402,8 @@
       "id": "helper-chain-depth",
       "label": "positive + depth limit",
       "ok": true,
-      "peak_bytes": 1042661,
-      "seconds": 0.0219,
+      "peak_bytes": 1042725,
+      "seconds": 0.0302,
       "type": "scan",
       "unsupported_or_unknown_constructs": 1
     },
@@ -460,7 +460,7 @@
       "label": "negative",
       "ok": true,
       "peak_bytes": 1011542,
-      "seconds": 0.0085,
+      "seconds": 0.0091,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -517,7 +517,7 @@
       "label": "negative",
       "ok": true,
       "peak_bytes": 1011481,
-      "seconds": 0.0074,
+      "seconds": 0.0088,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -574,7 +574,7 @@
       "label": "negative (for potentially_exposed)",
       "ok": true,
       "peak_bytes": 1011487,
-      "seconds": 0.0076,
+      "seconds": 0.0077,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -631,7 +631,7 @@
       "label": "negative",
       "ok": true,
       "peak_bytes": 1012201,
-      "seconds": 0.0057,
+      "seconds": 0.006,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -688,7 +688,7 @@
       "label": "unknown control",
       "ok": true,
       "peak_bytes": 1015373,
-      "seconds": 0.0114,
+      "seconds": 0.0116,
       "type": "scan",
       "unsupported_or_unknown_constructs": 3
     },
@@ -744,8 +744,8 @@
       "id": "neg-unsupported-guard",
       "label": "unknown control",
       "ok": true,
-      "peak_bytes": 1024019,
-      "seconds": 0.0105,
+      "peak_bytes": 1024083,
+      "seconds": 0.0163,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -801,8 +801,8 @@
       "id": "delegation",
       "label": "positive (delegation)",
       "ok": true,
-      "peak_bytes": 1029202,
-      "seconds": 0.0149,
+      "peak_bytes": 1029266,
+      "seconds": 0.0237,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -859,7 +859,7 @@
       "label": "positive (library model)",
       "ok": true,
       "peak_bytes": 1011478,
-      "seconds": 0.0062,
+      "seconds": 0.008,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -915,10 +915,409 @@
       "id": "class-receiver",
       "label": "positive (method receivers)",
       "ok": true,
-      "peak_bytes": 1023441,
-      "seconds": 0.0139,
+      "peak_bytes": 1023505,
+      "seconds": 0.0169,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "paths": {
+          "f1": null,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": null,
+          "recall": null,
+          "tp": 0
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "ts-same-bom-baseline",
+      "label": "negative (TS)",
+      "ok": true,
+      "peak_bytes": 1017237,
+      "seconds": 0.0286,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "paths": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "ts-same-bom-candidate",
+      "label": "positive (TS)",
+      "ok": true,
+      "peak_bytes": 1017064,
+      "seconds": 0.0286,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "paths": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "ts-same-bom-fixed",
+      "label": "positive guarded (TS)",
+      "ok": true,
+      "peak_bytes": 1017018,
+      "seconds": 0.0317,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "paths": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "ts-vercel-next",
+      "label": "positive (TS, Vercel AI)",
+      "ok": true,
+      "peak_bytes": 1011722,
+      "seconds": 0.0166,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "paths": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 4
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "ts-mcp-server",
+      "label": "positive (TS, MCP SDK)",
+      "ok": true,
+      "peak_bytes": 1012423,
+      "seconds": 0.0264,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "paths": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 3
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "ts-express-handoff",
+      "label": "positive (TS, delegation/class)",
+      "ok": true,
+      "peak_bytes": 1014167,
+      "seconds": 0.0337,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "paths": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 3
+        },
+        "unknowns": {
+          "expected": 1,
+          "missing": [],
+          "reported_on_expected": 1,
+          "unexpected": []
+        }
+      },
+      "id": "ts-negative",
+      "label": "negative + unknown (TS)",
+      "ok": true,
+      "peak_bytes": 1012421,
+      "seconds": 0.0194,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 1
     },
     {
       "eval": {
@@ -937,8 +1336,8 @@
       "id": "drift-same-bom-1",
       "label": "drift",
       "ok": true,
-      "peak_bytes": 1078383,
-      "seconds": 0.0386,
+      "peak_bytes": 1070753,
+      "seconds": 0.0407,
       "type": "drift"
     },
     {
@@ -958,8 +1357,8 @@
       "id": "drift-same-bom-2",
       "label": "drift",
       "ok": true,
-      "peak_bytes": 1090437,
-      "seconds": 0.0433,
+      "peak_bytes": 1090142,
+      "seconds": 0.0476,
       "type": "drift"
     },
     {
@@ -979,8 +1378,8 @@
       "id": "drift-mcp-1",
       "label": "drift",
       "ok": true,
-      "peak_bytes": 1066661,
-      "seconds": 0.0377,
+      "peak_bytes": 1066907,
+      "seconds": 0.0408,
       "type": "drift"
     },
     {
@@ -1000,8 +1399,8 @@
       "id": "drift-mcp-2",
       "label": "drift",
       "ok": true,
-      "peak_bytes": 1079270,
-      "seconds": 0.0387,
+      "peak_bytes": 1079063,
+      "seconds": 0.0439,
       "type": "drift"
     },
     {
@@ -1021,8 +1420,50 @@
       "id": "drift-identical",
       "label": "drift",
       "ok": true,
-      "peak_bytes": 1070837,
-      "seconds": 0.0454,
+      "peak_bytes": 1071124,
+      "seconds": 0.0392,
+      "type": "drift"
+    },
+    {
+      "eval": {
+        "bom_delta_actual": "unchanged",
+        "bom_delta_correct": true,
+        "bom_delta_expected": "unchanged",
+        "f1": 1.0,
+        "fn": 0,
+        "fn_items": [],
+        "fp": 0,
+        "fp_items": [],
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 2
+      },
+      "id": "drift-ts-same-bom-1",
+      "label": "drift (TS)",
+      "ok": true,
+      "peak_bytes": 1122196,
+      "seconds": 0.0566,
+      "type": "drift"
+    },
+    {
+      "eval": {
+        "bom_delta_actual": "unchanged",
+        "bom_delta_correct": true,
+        "bom_delta_expected": "unchanged",
+        "f1": 1.0,
+        "fn": 0,
+        "fn_items": [],
+        "fp": 0,
+        "fp_items": [],
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 2
+      },
+      "id": "drift-ts-same-bom-2",
+      "label": "drift (TS)",
+      "ok": true,
+      "peak_bytes": 1111309,
+      "seconds": 0.0569,
       "type": "drift"
     }
   ],
@@ -1038,7 +1479,7 @@
       "fp": 0,
       "precision": 1.0,
       "recall": 1.0,
-      "tp": 18
+      "tp": 26
     },
     "bindings": {
       "f1": 1.0,
@@ -1046,7 +1487,7 @@
       "fp": 0,
       "precision": 1.0,
       "recall": 1.0,
-      "tp": 26
+      "tp": 40
     },
     "drift_findings": {
       "f1": 1.0,
@@ -1054,21 +1495,21 @@
       "fp": 0,
       "precision": 1.0,
       "recall": 1.0,
-      "tp": 8
+      "tp": 12
     },
     "expected_unknowns": {
-      "expected": 4,
-      "reported_as_unknown": 4
+      "expected": 5,
+      "reported_as_unknown": 5
     },
-    "max_peak_bytes": 1090437,
-    "median_case_seconds": 0.0149,
+    "max_peak_bytes": 1122196,
+    "median_case_seconds": 0.0235,
     "paths": {
-      "f1": 0.9767441860465117,
+      "f1": 0.9850746268656716,
       "fn": 1,
       "fp": 0,
       "precision": 1.0,
-      "recall": 0.9545454545454546,
-      "tp": 21
+      "recall": 0.9705882352941176,
+      "tp": 33
     },
     "tools": {
       "f1": 1.0,
@@ -1076,7 +1517,7 @@
       "fp": 0,
       "precision": 1.0,
       "recall": 1.0,
-      "tp": 27
+      "tp": 42
     }
   }
 }
