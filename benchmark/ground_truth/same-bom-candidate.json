@@ -1,0 +1,30 @@
+{
+  "case": "same-bom-candidate",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "support-triage"
+  ],
+  "tools": [
+    "lookup_order",
+    "run_diagnostic"
+  ],
+  "bindings": [
+    [
+      "support-triage",
+      "lookup_order"
+    ],
+    [
+      "support-triage",
+      "run_diagnostic"
+    ]
+  ],
+  "paths": [
+    [
+      "support-triage",
+      "run_diagnostic",
+      "process_execution",
+      "potentially_exposed"
+    ]
+  ],
+  "notes": "stdin ticket is interpolated into instructions (via build_agent(ticket) call site); target param reaches subprocess.run(shell=True) through diagnostics.health_check."
+}

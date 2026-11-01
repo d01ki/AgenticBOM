@@ -1,0 +1,15 @@
+{
+  "case": "drift-mcp-1",
+  "annotator": "tool author (not independent)",
+  "bom_delta": "changed",
+  "findings": [
+    [
+      "new_bound_sensitive_operation",
+      "save_note"
+    ],
+    [
+      "tool_contract_changed",
+      "save_note"
+    ]
+  ]
+}

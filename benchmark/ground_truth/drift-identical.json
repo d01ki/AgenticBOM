@@ -1,0 +1,6 @@
+{
+  "case": "drift-identical",
+  "annotator": "tool author (not independent)",
+  "bom_delta": "unchanged",
+  "findings": []
+}

@@ -1,0 +1,42 @@
+{
+  "case": "helper-chain-depth",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "recorder"
+  ],
+  "tools": [
+    "write_record",
+    "write_deep"
+  ],
+  "bindings": [
+    [
+      "recorder",
+      "write_record"
+    ],
+    [
+      "recorder",
+      "write_deep"
+    ]
+  ],
+  "paths": [
+    [
+      "recorder",
+      "write_record",
+      "filesystem_write",
+      "operation_path"
+    ],
+    [
+      "recorder",
+      "write_deep",
+      "filesystem_write",
+      "operation_path"
+    ]
+  ],
+  "expected_unknowns": [
+    [
+      "recorder",
+      "write_deep"
+    ]
+  ],
+  "notes": "write_deep truly reaches open(name, a) after 4 hops; the bounded depth (3) should report UNKNOWN. Counted as a strict FN for paths."
+}

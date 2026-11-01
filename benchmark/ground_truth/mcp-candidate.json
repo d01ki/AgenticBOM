@@ -1,0 +1,48 @@
+{
+  "case": "mcp-candidate",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "notes-assistant"
+  ],
+  "tools": [
+    "read_note",
+    "save_note"
+  ],
+  "bindings": [
+    [
+      "notes-assistant",
+      "read_note"
+    ],
+    [
+      "notes-assistant",
+      "save_note"
+    ]
+  ],
+  "paths": [
+    [
+      "notes-assistant",
+      "save_note",
+      "filesystem_write",
+      "operation_path"
+    ],
+    [
+      "notes-assistant",
+      "save_note",
+      "network_state_change",
+      "operation_path"
+    ],
+    [
+      "notes",
+      "save_note",
+      "filesystem_write",
+      "operation_path"
+    ],
+    [
+      "notes",
+      "save_note",
+      "network_state_change",
+      "operation_path"
+    ]
+  ],
+  "notes": "Agent->MCP binding via MCPServerStdio args [server.py]. filesystem write path guarded by isalnum; sync_url controls requests.post destination."
+}

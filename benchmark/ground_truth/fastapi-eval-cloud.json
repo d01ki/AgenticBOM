@@ -1,0 +1,41 @@
+{
+  "case": "fastapi-eval-cloud",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "export-assistant"
+  ],
+  "tools": [
+    "calculate",
+    "remove_export",
+    "export_count"
+  ],
+  "bindings": [
+    [
+      "export-assistant",
+      "calculate"
+    ],
+    [
+      "export-assistant",
+      "remove_export"
+    ],
+    [
+      "export-assistant",
+      "export_count"
+    ]
+  ],
+  "paths": [
+    [
+      "export-assistant",
+      "calculate",
+      "code_execution",
+      "potentially_exposed"
+    ],
+    [
+      "export-assistant",
+      "remove_export",
+      "cloud_sdk_call",
+      "potentially_exposed"
+    ]
+  ],
+  "notes": "Route parameter question reaches instructions. list_objects_v2 is read-only and excluded."
+}

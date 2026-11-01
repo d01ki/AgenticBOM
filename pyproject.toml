@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentic-exposure-mapper"
+version = "0.1.0"
+description = "Evidence-based agentic capability exposure mapping and security-semantic drift for AI agent repositories (static, offline)."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "jsonschema>=4"]
+
+[project.scripts]
+agentic-bom = "agentic_bom.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+agentic_bom = ["schemas/*.json", "web/*.html", "web/*.js", "web/*.css"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

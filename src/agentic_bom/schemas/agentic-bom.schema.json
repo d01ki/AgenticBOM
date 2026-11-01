@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "aem/agentic-bom/0.1.0",
+  "title": "AEM agent-centric inventory (project-specific format)",
+  "type": "object",
+  "required": ["format", "schema_version", "generator", "application", "components", "relationships"],
+  "properties": {
+    "format": {"const": "aem-agentic-bom"},
+    "schema_version": {"const": "0.1.0"},
+    "components": {
+      "type": "object",
+      "required": ["agents", "tools", "models", "mcp_servers", "packages", "data_sources"],
+      "properties": {
+        "agents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "instructions", "tools", "management_status", "resolution", "evidence"],
+            "properties": {
+              "management_status": {"enum": ["registered", "unregistered", "unknown"]},
+              "instructions": {"type": "object", "required": ["provenance", "body"], "properties": {"body": {"const": "not stored"}}}
+            }
+          }
+        },
+        "tools": {"type": "array", "items": {"type": "object", "required": ["id", "name", "framework", "bound_by", "exposed_by", "resolution"]}}
+      }
+    },
+    "relationships": {"type": "array", "items": {"type": "object", "required": ["source", "target", "type", "resolution"]}}
+  }
+}

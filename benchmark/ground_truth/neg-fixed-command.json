@@ -1,0 +1,25 @@
+{
+  "case": "neg-fixed-command",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "repo-helper"
+  ],
+  "tools": [
+    "repo_status"
+  ],
+  "bindings": [
+    [
+      "repo-helper",
+      "repo_status"
+    ]
+  ],
+  "paths": [
+    [
+      "repo-helper",
+      "repo_status",
+      "process_execution",
+      "bound_capability"
+    ]
+  ],
+  "notes": "Fixed argv; parameter does not reach the command."
+}
