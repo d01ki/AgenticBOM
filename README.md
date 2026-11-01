@@ -30,6 +30,16 @@ Bundled scenario `same-bom-new-exposure` (baseline → candidate → fixed):
 
 There is also `mcp-tool-schema-drift`. In that scenario a FastMCP tool gains a `sync_url` parameter and a manipulative description. AEM reports `tool_contract_changed` and joins it to the new agent→MCP→tool→`requests.post` path.
 
+## Local web GUI
+
+```bash
+agentic-bom serve            # alias: agentic-bom gui ; opens the browser automatically
+```
+
+From the browser you can run **Scan** (a local folder via the built-in folder picker, or a GitHub URL), **Compare** (two folders, or two revisions of a git repository) and **Demo**. Each result opens as the interactive report, and you can download `agentic-bom.json`, `capability-graph.json`, `findings.sarif` and `security-drift.json`. All runs from the session are listed in the sidebar.
+
+The GUI binds to loopback only. Access needs the one-time token URL printed in the terminal, which is exchanged for an HttpOnly SameSite=Strict cookie. POST requests need a CSRF header and a same-origin request. The Host header is checked to block DNS rebinding. Reports render in a sandboxed iframe. Scanned code is never executed.
+
 ## CLI
 
 ```bash

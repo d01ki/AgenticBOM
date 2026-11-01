@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; frame-src 'self'; img-src data:; form-action 'none'; base-uri 'none'">
+<meta name="aem-token" content="__AEM_TOKEN__">
+<title>Agentic Exposure Mapper</title>
+<style>
+:root{--bg:#0e1117;--panel:#161b24;--panel2:#1d2430;--line:#2a3342;--text:#e6e9ef;--muted:#9aa4b5;--acc:#4ea1ff;--pe:#ff5d5d;--op:#f5a524;--ok:#3ecf8e;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;display:grid;grid-template-columns:380px 1fr;grid-template-rows:52px 1fr}
+header{grid-column:1/3;display:flex;align-items:center;gap:12px;padding:0 18px;border-bottom:1px solid var(--line);background:var(--panel)}
+header b{font-size:15px}header .v{color:var(--muted);font-size:12px}header .note{margin-left:auto;color:var(--muted);font-size:12px}
+aside{border-right:1px solid var(--line);overflow:auto;padding:14px 16px 30px}
+main{display:flex;flex-direction:column;min-width:0}
+.tabs{display:flex;gap:4px;margin-bottom:12px}.tabs button{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--muted);padding:7px;border-radius:7px;cursor:pointer;font:inherit}
+.tabs button.active{color:var(--text);border-color:var(--acc)}
+.form{display:none}.form.active{display:block}
+label{display:block;color:var(--muted);font-size:12px;margin:10px 0 4px}
+.row{display:flex;gap:6px}input[type=text],select{flex:1;width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:8px 10px;font:13px var(--mono)}
+input[type=text]:focus,select:focus{outline:none;border-color:var(--acc)}
+.chk{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;margin-top:10px}
+button.primary{margin-top:14px;width:100%;background:var(--acc);color:#04111f;border:0;border-radius:8px;padding:10px;font-weight:700;cursor:pointer;font:inherit;font-weight:700}
+button.primary:disabled{opacity:.5;cursor:progress}
+button.small{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:0 10px;cursor:pointer;font:inherit;font-size:12px;white-space:nowrap}
+.hint{color:var(--muted);font-size:12px;margin-top:6px}
+.err{margin-top:12px;padding:9px 11px;border-radius:7px;background:#3a1720;border:1px solid #5b2430;color:#ffc9cf;font-size:13px;display:none}
+.busy{margin-top:12px;color:var(--muted);font-size:13px;display:none}.busy::before{content:"";display:inline-block;width:12px;height:12px;border:2px solid var(--muted);border-top-color:transparent;border-radius:50%;margin-right:8px;vertical-align:-2px;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+h3{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin:22px 0 8px}
+.run{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:9px 11px;margin-bottom:8px;cursor:pointer}
+.run:hover{border-color:#3b475b}.run.sel{border-color:var(--acc)}
+.run .t{font-weight:600;word-break:break-all}.run .m{color:var(--muted);font-size:12px;margin-top:3px}
+.pill{display:inline-block;font-size:11px;border:1px solid currentColor;border-radius:999px;padding:0 7px;margin-right:4px;margin-top:5px}
+.k-scan{color:var(--acc)}.k-diff{color:#c49bff}.p-pe{color:var(--pe)}.p-op{color:var(--op)}.p-ok{color:var(--ok)}.p-m{color:var(--muted)}
+.bar{display:flex;align-items:center;gap:8px;padding:9px 16px;border-bottom:1px solid var(--line);background:var(--panel);min-height:46px}
+.bar .title{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bar .sp{flex:1}
+.bar a{color:var(--acc);font-size:12px;text-decoration:none;border:1px solid var(--line);border-radius:6px;padding:3px 8px}
+iframe{flex:1;border:0;width:100%;background:var(--bg)}
+.empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);text-align:center;padding:40px}
+.empty div{max-width:520px}.empty b{color:var(--text)}
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:12px;width:min(640px,92vw);padding:0}
+dialog::backdrop{background:#0009}
+.dlg-h{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center}
+.dlg-h .p{flex:1;font:12px var(--mono);word-break:break-all}
+.dlg-list{max-height:52vh;overflow:auto;padding:6px}
+.dlg-list div{padding:6px 10px;border-radius:6px;cursor:pointer;font:13px var(--mono)}.dlg-list div:hover{background:var(--panel2)}
+.dlg-f{padding:10px 16px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center}.dlg-f .hint{flex:1;margin:0}
+</style>
+</head>
+<body>
+<header><b>Agentic Exposure Mapper</b><span class="v">v__AEM_VERSION__ · local GUI</span><span class="note">Static analysis only · scanned code is never executed · bound to localhost</span></header>
+<aside>
+  <div class="tabs" id="tabs"></div>
+  <section class="form" id="f-scan">
+    <label for="scan-target">Project folder or GitHub URL</label>
+    <div class="row"><input type="text" id="scan-target" placeholder="C:\path\to\project  or  https://github.com/owner/repo" autocomplete="off"><button class="small" data-browse="scan-target">Browse…</button></div>
+    <label for="scan-ref">Git ref (GitHub URL only, optional)</label>
+    <input type="text" id="scan-ref" placeholder="branch, tag or full commit SHA" autocomplete="off">
+    <label class="chk"><input type="checkbox" id="scan-tests"> Include tests/ and test_*.py</label>
+    <button class="primary" id="run-scan">Scan</button>
+  </section>
+  <section class="form" id="f-diff">
+    <label class="chk" style="margin-top:0"><input type="checkbox" id="diff-git"> Compare two revisions of a git repository</label>
+    <div id="diff-dirs">
+      <label for="diff-base">Baseline folder</label>
+      <div class="row"><input type="text" id="diff-base" autocomplete="off"><button class="small" data-browse="diff-base">Browse…</button></div>
+      <label for="diff-head">Candidate folder</label>
+      <div class="row"><input type="text" id="diff-head" autocomplete="off"><button class="small" data-browse="diff-head">Browse…</button></div>
+    </div>
+    <div id="diff-gitbox" style="display:none">
+      <label for="diff-repo">Repository folder</label>
+      <div class="row"><input type="text" id="diff-repo" autocomplete="off"><button class="small" data-browse="diff-repo">Browse…</button></div>
+      <label for="diff-brev">Baseline revision</label><input type="text" id="diff-brev" value="HEAD~1" autocomplete="off">
+      <label for="diff-hrev">Candidate revision</label><input type="text" id="diff-hrev" value="HEAD" autocomplete="off">
+    </div>
+    <label class="chk"><input type="checkbox" id="diff-tests"> Include tests/ and test_*.py</label>
+    <button class="primary" id="run-diff">Compare</button>
+    <div class="hint">Reports security-semantic drift even when the Agentic BOM is unchanged.</div>
+  </section>
+  <section class="form" id="f-demo">
+    <label for="demo-scenario">Bundled offline scenario</label>
+    <select id="demo-scenario"></select>
+    <button class="primary" id="run-demo">Run demo (baseline → candidate → fixed)</button>
+    <div class="hint">Creates two comparisons: the regression and its fix.</div>
+  </section>
+  <div class="busy" id="busy">Analysing…</div>
+  <div class="err" id="err"></div>
+  <h3>Runs (this session)</h3>
+  <div id="runs"><div class="hint">No runs yet.</div></div>
+</aside>
+<main>
+  <div class="bar" id="bar" style="display:none"><span class="title" id="bar-title"></span><span class="sp"></span><span id="bar-dl"></span></div>
+  <div class="empty" id="empty"><div><b>Start with the Demo tab</b> to see an unchanged Agentic BOM hide a new exposure path,<br>or scan / compare your own Python agent project.<br><br>Results are static possibilities within the supported scope — never proof of exploitation.</div></div>
+  <iframe id="frame" title="Report" sandbox="allow-scripts" style="display:none"></iframe>
+</main>
+<dialog id="dlg">
+  <div class="dlg-h"><button class="small" id="dlg-up">↑ Up</button><span class="p" id="dlg-path"></span><select id="dlg-roots" style="flex:0 0 auto;width:auto;display:none"></select></div>
+  <div class="dlg-list" id="dlg-list"></div>
+  <div class="dlg-f"><span class="hint" id="dlg-hint"></span><button class="small" id="dlg-cancel">Cancel</button><button class="small" id="dlg-ok" style="border-color:var(--acc)">Select this folder</button></div>
+</dialog>
+<script>
+(function(){
+"use strict";
+const TOKEN = document.querySelector('meta[name="aem-token"]').content;
+const $ = (id) => document.getElementById(id);
+function el(tag, attrs, ...kids){ const e = document.createElement(tag); if (attrs) for (const [k,v] of Object.entries(attrs)) { if (k === "class") e.className = v; else if (k.startsWith("on")) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v); } for (const k of kids.flat()) { if (k == null || k === false) continue; e.appendChild(typeof k === "object" ? k : document.createTextNode(String(k))); } return e; }
+async function api(method, path, body){
+  const opt = {method, credentials: "same-origin", headers: {}};
+  if (body !== undefined) { opt.headers["Content-Type"] = "application/json"; opt.headers["X-AEM-Token"] = TOKEN; opt.body = JSON.stringify(body); }
+  const r = await fetch(path, opt);
+  let data = null; try { data = await r.json(); } catch (e) { data = {error: "unexpected response"}; }
+  if (!r.ok) throw new Error((data && data.error) || ("HTTP " + r.status));
+  return data;
+}
+// tabs
+const TABS = [["scan","Scan"],["diff","Compare"],["demo","Demo"]];
+function showTab(t){ TABS.forEach(([k]) => { $("f-" + k).classList.toggle("active", k === t); }); $("tabs").querySelectorAll("button").forEach(b => b.classList.toggle("active", b.dataset.t === t)); }
+TABS.forEach(([k,l]) => { const b = el("button", {onclick: () => showTab(k)}, l); b.dataset.t = k; $("tabs").appendChild(b); });
+$("diff-git").addEventListener("change", e => { $("diff-dirs").style.display = e.target.checked ? "none" : ""; $("diff-gitbox").style.display = e.target.checked ? "" : "none"; });
+
+// runs
+let current = null;
+function pills(r){
+  const out = [el("span",{class:"pill k-" + r.kind}, r.kind === "scan" ? "scan" : "compare")];
+  const s = r.summary;
+  if (r.kind === "diff") {
+    out.push(el("span",{class:"pill p-m"}, "BOM " + r.bom_status));
+    if (r.risk_findings) out.push(el("span",{class:"pill " + (r.banner && r.banner.includes("potential exposure") ? "p-pe" : "p-op")}, r.risk_findings + " risk finding" + (r.risk_findings === 1 ? "" : "s")));
+    else out.push(el("span",{class:"pill p-ok"}, "no new risk"));
+    if (r.findings - r.risk_findings) out.push(el("span",{class:"pill p-ok"}, (r.findings - r.risk_findings) + " reduced"));
+  } else {
+    if (s.potentially_exposed_paths) out.push(el("span",{class:"pill p-pe"}, s.potentially_exposed_paths + " potentially exposed"));
+    out.push(el("span",{class:"pill p-op"}, s.sensitive_operation_paths + " operation paths"));
+    if (s.unknown_paths) out.push(el("span",{class:"pill p-m"}, s.unknown_paths + " unknown"));
+  }
+  return out;
+}
+async function refreshRuns(selectId){
+  const data = await api("GET", "/api/runs");
+  const box = $("runs"); box.replaceChildren();
+  if (!data.runs.length) { box.appendChild(el("div",{class:"hint"},"No runs yet.")); return; }
+  data.runs.forEach(r => {
+    const d = el("div",{class:"run" + (current && current.id === r.id ? " sel" : ""), onclick: () => openRun(r)},
+      el("div",{class:"t"}, r.label), el("div",{class:"m"}, r.created + " · " + r.summary.agents + " agents · " + r.summary.tools + " tools"), el("div", null, pills(r)),
+      r.banner ? el("div",{class:"m"}, r.banner) : null);
+    box.appendChild(d);
+  });
+  if (selectId) { const r = data.runs.find(x => x.id === selectId); if (r) openRun(r); }
+}
+function openRun(r){
+  current = r;
+  $("empty").style.display = "none"; $("frame").style.display = ""; $("bar").style.display = "";
+  $("frame").src = "/report/" + encodeURIComponent(r.id);
+  $("bar-title").textContent = r.label;
+  const dl = $("bar-dl"); dl.replaceChildren();
+  r.artifacts.forEach(a => dl.appendChild(el("a",{href:"/download/" + encodeURIComponent(r.id) + "/" + encodeURIComponent(a)}, a)));
+  document.querySelectorAll(".run").forEach(x => x.classList.remove("sel"));
+  refreshRuns();
+}
+// actions
+async function run(btn, fn){
+  $("err").style.display = "none"; $("busy").style.display = "block";
+  document.querySelectorAll("button.primary").forEach(b => b.disabled = true);
+  try { await fn(); }
+  catch (e) { $("err").textContent = e.message; $("err").style.display = "block"; }
+  finally { $("busy").style.display = "none"; document.querySelectorAll("button.primary").forEach(b => b.disabled = false); }
+}
+$("run-scan").onclick = () => run($("run-scan"), async () => {
+  const r = await api("POST", "/api/scan", {target: $("scan-target").value, ref: $("scan-ref").value || null, include_tests: $("scan-tests").checked});
+  await refreshRuns(r.id);
+});
+$("run-diff").onclick = () => run($("run-diff"), async () => {
+  const git = $("diff-git").checked;
+  const body = git ? {git_repo: $("diff-repo").value, base: $("diff-brev").value, head: $("diff-hrev").value, include_tests: $("diff-tests").checked}
+                   : {base: $("diff-base").value, head: $("diff-head").value, include_tests: $("diff-tests").checked};
+  const r = await api("POST", "/api/diff", body);
+  await refreshRuns(r.id);
+});
+$("run-demo").onclick = () => run($("run-demo"), async () => {
+  const r = await api("POST", "/api/demo", {scenario: $("demo-scenario").value});
+  await refreshRuns(r.runs[0].id);
+});
+// folder picker
+let pickTarget = null;
+async function loadDir(path){
+  const q = path ? "?path=" + encodeURIComponent(path) : "";
+  const d = await api("GET", "/api/fs" + q);
+  $("dlg-path").textContent = d.path; $("dlg-path").dataset.path = d.path; $("dlg-up").dataset.path = d.parent || ""; $("dlg-up").disabled = !d.parent;
+  $("dlg-hint").textContent = d.project_hints.length ? "Contains: " + d.project_hints.join(", ") : "";
+  const roots = $("dlg-roots");
+  if (d.roots.length) { roots.style.display = ""; roots.replaceChildren(el("option",{value:""},"Drive…"), ...d.roots.map(x => el("option",{value:x},x))); } else roots.style.display = "none";
+  const list = $("dlg-list"); list.replaceChildren();
+  if (!d.dirs.length) list.appendChild(el("div",{class:"hint"},"(no sub-folders)"));
+  d.dirs.forEach(n => list.appendChild(el("div",{onclick: () => loadDir(d.path.replace(/[\\/]$/, "") + (d.path.includes("\\") ? "\\" : "/") + n)}, "📁 " + n)));
+}
+document.querySelectorAll("[data-browse]").forEach(b => b.addEventListener("click", async () => {
+  pickTarget = $(b.dataset.browse);
+  try { await loadDir(pickTarget.value || null); } catch (e) { await loadDir(null); }
+  $("dlg").showModal();
+}));
+$("dlg-up").onclick = () => { if ($("dlg-up").dataset.path) loadDir($("dlg-up").dataset.path); };
+$("dlg-roots").onchange = (e) => { if (e.target.value) loadDir(e.target.value); };
+$("dlg-cancel").onclick = () => $("dlg").close();
+$("dlg-ok").onclick = () => { pickTarget.value = $("dlg-path").dataset.path; $("dlg").close(); };
+// init
+(async () => {
+  showTab("demo");
+  try {
+    const s = await api("GET", "/api/scenarios");
+    $("demo-scenario").replaceChildren(...s.scenarios.map(x => el("option",{value:x},x)));
+    if (!s.scenarios.length) { $("demo-scenario").appendChild(el("option",{value:""},"(bundled examples not found)")); $("run-demo").disabled = true; showTab("scan"); }
+    await refreshRuns();
+  } catch (e) { $("err").textContent = e.message; $("err").style.display = "block"; }
+})();
+})();
+</script>
+</body>
+</html>

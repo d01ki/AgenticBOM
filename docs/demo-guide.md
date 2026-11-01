@@ -5,6 +5,10 @@ pip install -e .
 agentic-bom demo --scenario all --out out/demo
 ```
 
+## GUI variant
+
+To present live, run `agentic-bom serve`, go to the **Demo** tab and click *Run demo*. Both comparisons from the acts below appear in the sidebar. Click a path row to open the evidence drawer. Use the **Compare** tab with the folder picker to show the CLI-free workflow on any two folders.
+
 ## Act 1: same BOM, new exposure
 
 Open `out/demo/same-bom-new-exposure/1-baseline-vs-candidate/report.html`.
