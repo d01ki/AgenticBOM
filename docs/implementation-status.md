@@ -117,9 +117,40 @@ The remaining oa unknowns are 11 library tool instances that are not modelled, 1
 - Verified with `tests/integration/test_web_gui.py` (8 tests over real HTTP) and a headless Chrome walkthrough: demo, report drawer, folder picker, compare, input-validation error, local scan, download. The only browser console error was the intentional 400 from the invalid-URL test.
 - Limits: run history is in memory only (last 50 runs, lost on restart). Analyses run one at a time with no cancel button. There is no progress bar for long GitHub clones.
 
+## TypeScript / JavaScript detector (branch `feat/typescript-detector`)
+
+Added a pure-Python TS/JS parser and analyzer (no Node.js dependency). It covers OpenAI Agents JS, the Vercel AI SDK and the MCP TS SDK, with Express/Next.js sources, the TS demo `ts-same-bom-new-exposure`, 4 TS benchmark cases and 2 TS drift cases.
+
+- Tests: **99 passed, 1 skipped**. Bundled benchmark (23 scan and 7 drift cases): agents 26/0/0, tools 42/0/0, bindings 40/0/0, **paths 33 TP / 0 FP / 1 FN**, drift 12/0/0 (TP/FP/FN). Same caveats as above: author-annotated synthetic fixtures.
+
+### External TS spot check (pinned SHAs, no ground truth)
+
+| Repo | SHA | TS/JS files | Unparsed regions | Agents | Tools | MCP servers | Paths | Time |
+|---|---|---|---|---|---|---|---|---|
+| openai/openai-agents-js | `9b33d73a3ad696f0c43689d1428e901bfdc37fa0` | 782 | 261 | 284 | 133 | 13 | 2 operation_path (local `shellTool`, `needsApproval` → low), 42 unknown | 12 s |
+| modelcontextprotocol/typescript-sdk | `1e608caeb5130b2ad0fa067c84b26a038c1c6e36` | 439 | 156 | 0 | 115 | 82 | none | 6 s |
+| vercel/ai | `dffe4053c15709577329518044b1ec1d4c6bb0fe` | 6,228 | 2,354 | 567 | 919 | 21 | 25 operation_path, 2 bound_capability, ~113 unknown | 41 s |
+
+Spot-check results (source read by hand):
+
+- **True positives in vercel/ai examples:** calculator tools calling `eval(expression)`, and the Anthropic bash/shell examples calling `exec(command)` through `lib/shell-executor.ts` (one with `needsApproval` → low).
+- **Memory tool:** every path goes through `validatePath()` (`startsWith` + throw). AEM reports guard `unknown`, not `absent`.
+- Checkout note: on Windows the vercel/ai and typescript-sdk clones need `core.longpaths=true`.
+
+Defects found and fixed during this spot check:
+
+8. **Crash.** A computed member callee (`obj[x](...)`) was compared against a set of method names, raising `TypeError`.
+9. **Wrong write target.** `fs.writeFile(path, data)` counted `data` as part of the target, which hid a regex guard on `path`. Only copy/rename-style calls now have two target arguments.
+10. **Missed framework rename.** MCP TS SDK servers were missed because the SDK moved to `@modelcontextprotocol/server`. This is the same failure class as the Python `FastMCP`→`MCPServer` rename.
+11. **Hosted-container false positives.** `shellTool({ environment: { type: 'container_auto' } })` in the JS SDK runs in a provider container, which is the same false-positive class as in Python. AEM now reads `environment` and `needsApproval`.
+12. **Inflated agent count.** `generateText` calls without `tools` were counted as agents (1,488 on vercel/ai). Only calls with `tools` count now (567).
+13. **Performance.** The character-by-character tokenizer took 174 s on vercel/ai. Regex tokenization brought it to 41 s.
+14. **Exponential nested templates.** Nested template literals re-tokenized inner templates. A 400-level nesting case hung, found by the hostile-input test. There is now a skip-only scanner and a depth limit of 32.
+15. **Fix reported as a new path.** The TS demo's fix (`exec` → `execFile`) showed up as a new path. Capability slot matching now pairs the two.
+
 ## Not done / next steps
 
-- TypeScript detector (Vercel AI SDK, OpenAI Agents TS). Not started.
+- TS/JS: `tsconfig` path aliases, `export * from` barrels, LangChain.js / Mastra.
 - CycloneDX export and AgentBOM v1 interoperability. Not started, and conformance is not claimed.
 - Receiver typing for parameters, factories and containers (still a silent false-negative class).
 - Extending the library tool model (ComputerTool, LangChain toolkits beyond file management) and per-version SDK regression fixtures.

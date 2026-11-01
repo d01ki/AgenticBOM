@@ -1,0 +1,30 @@
+{
+  "case": "ts-same-bom-fixed",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "support-triage"
+  ],
+  "tools": [
+    "lookup_order",
+    "run_diagnostic"
+  ],
+  "bindings": [
+    [
+      "support-triage",
+      "lookup_order"
+    ],
+    [
+      "support-triage",
+      "run_diagnostic"
+    ]
+  ],
+  "paths": [
+    [
+      "support-triage",
+      "run_diagnostic",
+      "process_execution",
+      "operation_path"
+    ]
+  ],
+  "notes": "Set.has allowlist guard + execFile without shell."
+}

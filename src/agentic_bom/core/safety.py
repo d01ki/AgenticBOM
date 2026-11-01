@@ -57,19 +57,26 @@ class WalkResult:
     other_language_files: dict[str, int] = field(default_factory=dict)
 
 
+TS_TEST_RE = re.compile(r"\.(test|spec)\.(ts|tsx|js|jsx|mjs|cjs|mts|cts)$")
+
+
 def is_test_path(rel: Path) -> bool:
     parts = rel.parts
     if any(p in TEST_DIRS for p in parts[:-1]):
         return True
     name = parts[-1]
-    return name.startswith("test_") or name.endswith("_test.py") or name == "conftest.py"
+    return name.startswith("test_") or name.endswith("_test.py") or name == "conftest.py" or bool(TS_TEST_RE.search(name))
 
 
-def safe_walk(root: Path, include_tests: bool = False, suffixes: tuple[str, ...] = (".py", ".json")) -> WalkResult:
+CODE_SUFFIXES = (".py", ".json", ".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs")
+SKIP_FILE_RE = re.compile(r"(\.d\.ts|\.min\.js|\.bundle\.js|\.map)$")
+
+
+def safe_walk(root: Path, include_tests: bool = False, suffixes: tuple[str, ...] = CODE_SUFFIXES) -> WalkResult:
     """Walk ``root`` without following symlinks or leaving the root."""
     root = root.resolve()
     res = WalkResult()
-    other_lang = {".ts": "typescript", ".tsx": "typescript", ".js": "javascript", ".mjs": "javascript", ".go": "go", ".java": "java"}
+    other_lang = {".go": "go", ".java": "java", ".rb": "ruby", ".rs": "rust", ".cs": "csharp"}
     for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
         dp = Path(dirpath)
         rel_dir = dp.relative_to(root)
@@ -105,7 +112,9 @@ def safe_walk(root: Path, include_tests: bool = False, suffixes: tuple[str, ...]
             except (OSError, ValueError):
                 res.skipped_symlinks.append(rel.as_posix())
                 continue
-            if not include_tests and suffix == ".py" and is_test_path(rel):
+            if SKIP_FILE_RE.search(fn):
+                continue
+            if not include_tests and suffix in CODE_SUFFIXES and suffix != ".json" and is_test_path(rel):
                 res.excluded_tests.append(rel.as_posix())
                 continue
             try:

@@ -105,7 +105,7 @@ if (D.drift) {
 
 // ---------------- header
 document.getElementById("scope").textContent =
-  `Scope: ${H.scope.label} · ${H.coverage.python_files_analyzed} Python files analysed · static analysis of supported Python patterns only (see Coverage) · ${H.tool.name} ${H.tool.version}` +
+  `Scope: ${H.scope.label} · ${H.coverage.python_files_analyzed} Python + ${H.coverage.ts_js_files_analyzed || 0} TS/JS files analysed · static analysis of supported patterns only (see Coverage) · ${H.tool.name} ${H.tool.version}` +
   (D.drift ? ` · comparing ${D.drift.base.label} → ${D.drift.head.label}` : "");
 const bannerBox = document.getElementById("banner");
 if (D.drift) {
@@ -279,7 +279,7 @@ function drawGraph(){
     g.appendChild(grp);
   });
 }
-function firstOpEv(p){ const e = (p.evidence || []).filter(e => e.detector_id.startsWith("py.sensitive-op")); return e.length ? e[e.length - 1] : (p.evidence || [])[0]; }
+function firstOpEv(p){ const e = (p.evidence || []).filter(e => e.detector_id.includes(".sensitive-op.")); return e.length ? e[e.length - 1] : (p.evidence || [])[0]; }
 function renderPaths(){
   const t = document.getElementById("pathtable"); t.replaceChildren();
   t.appendChild(el("tr", null, ["Class","Severity","Agent / entry","Tool","Operation","Target","Guard","Location"].map(h => el("th", null, h))));
@@ -333,7 +333,7 @@ if (D.drift) {
   box.appendChild(el("h3", null, "Supported matrix"));
   box.appendChild(kv(Object.entries(C.supported_matrix.languages).concat(Object.entries(C.supported_matrix.frameworks))));
   box.appendChild(el("h3", null, "Scan scope"));
-  box.appendChild(kv([["Python files analysed", C.python_files_analyzed], ["Parse errors", C.parse_errors.map(e => `${e.file} (${e.error})`)], ["Excluded test files", C.excluded_test_files], ["Skipped large files", C.skipped_large_files], ["Skipped symlinks", C.skipped_symlinks], ["Other languages present (not analysed)", Object.entries(C.unsupported_languages_present).map(([k,v]) => `${k}: ${v} files`)], ["Helper depth limit", C.analysis_limits.max_helper_depth]]));
+  box.appendChild(kv([["Python files analysed", C.python_files_analyzed], ["TS/JS files analysed", C.ts_js_files_analyzed || 0], ["TS/JS unparsed regions (skipped)", C.ts_js_unparsed_regions || 0], ["Parse errors", C.parse_errors.map(e => `${e.file} (${e.error})`)], ["Excluded test files", C.excluded_test_files], ["Skipped large files", C.skipped_large_files], ["Skipped symlinks", C.skipped_symlinks], ["Other languages present (not analysed)", Object.entries(C.unsupported_languages_present).map(([k,v]) => `${k}: ${v} files`)], ["Helper depth limit", C.analysis_limits.max_helper_depth]]));
   box.appendChild(el("h3", null, "Unknowns (never classified as safe)"));
   const t = el("table"); t.appendChild(el("tr",null,["Kind","Location","Reason"].map(h => el("th",null,h))));
   if (!C.unknowns.length) t.appendChild(el("tr",null, el("td",{colspan:"3",class:"muted"},"none recorded")));

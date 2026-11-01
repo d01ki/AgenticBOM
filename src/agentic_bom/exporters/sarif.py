@@ -31,7 +31,7 @@ def _loc(ev: dict[str, Any]) -> dict[str, Any]:
 
 
 def _primary(evidence: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    ops = [e for e in evidence if e["detector_id"].startswith("py.sensitive-op")]
+    ops = [e for e in evidence if ".sensitive-op." in e["detector_id"]]
     return ops[-1:] or evidence[:1]
 
 

@@ -28,21 +28,29 @@ from agentic_bom.core.models import (
 )
 from agentic_bom.core.safety import read_text, safe_walk
 from agentic_bom.detectors.mcp import is_mcp_config, parse_mcp_config
-from agentic_bom.detectors.packages import AI_PACKAGES, parse_pyproject, parse_requirements
+from agentic_bom.detectors.packages import AI_PACKAGES, parse_package_json, parse_pyproject, parse_requirements
 from agentic_bom.detectors.python import ProjectIndex, ToolInfo, _tool_contract, detect_tools, is_route_handler, tool_params
+from agentic_bom.detectors.typescript import TS_SUFFIXES, analyze_project
 
 SUPPORTED_MATRIX = {
-    "languages": {"python": "supported (AST, explicit patterns)", "typescript": "not implemented in this revision", "javascript": "not implemented in this revision"},
+    "languages": {
+        "python": "supported (AST, explicit patterns)",
+        "typescript / javascript": "supported (built-in tolerant parser, explicit patterns; unparsed regions are counted)",
+    },
     "frameworks": {
         "openai-agents (Python)": "Agent(), @function_tool, function_tool(fn), Runner.run*, MCPServerStdio/Sse/StreamableHttp",
         "mcp FastMCP (Python)": "FastMCP(), @server.tool()",
         "langchain / langgraph (Python)": "@tool, StructuredTool.from_function, create_react_agent",
         "flask / fastapi-style routes": "route handler parameters and flask.request treated as untrusted sources",
+        "OpenAI Agents JS": "new Agent({...}), tool({...}), run(), agent.asTool(), handoffs, MCPServerStdio/StreamableHttp, hosted tools",
+        "Vercel AI SDK": "tool({...}), generateText/streamText/generateObject/streamObject, Experimental_Agent",
+        "MCP TypeScript SDK": "new McpServer(), server.tool() / server.registerTool()",
+        "express / Next.js routes (TS/JS)": "app.METHOD(path, handler) and app/**/route.ts handler parameters treated as untrusted sources",
     },
     "operations": sorted(ops.CATEGORY_LABELS),
 }
 SOURCE_LABELS = {
-    "stdin": "stdin / input()",
+    "stdin": "stdin",
     "argv": "command-line arguments",
     "http_request": "HTTP request data",
     "http_request_param": "HTTP route parameter",
@@ -76,6 +84,7 @@ class Scanner:
         config_errors = []
         unreadable = []
         n_py = 0
+        ts_sources: dict[str, str] = {}
         for f in walk.files:
             rel = f.relative_to(self.root).as_posix()
             try:
@@ -91,6 +100,10 @@ class Scanner:
                 packages += parse_requirements(rel, text)
             elif name == "pyproject.toml":
                 packages += parse_pyproject(rel, text)
+            elif name == "package.json":
+                packages += parse_package_json(rel, text)
+            elif f.suffix in TS_SUFFIXES:
+                ts_sources[rel] = text
             elif is_mcp_config(rel):
                 servers, err = parse_mcp_config(rel, text)
                 mcp_configs += servers
@@ -99,6 +112,7 @@ class Scanner:
         self.index = index
         self.ctx = AnalysisContext(index, max_depth=self.max_depth)
         tools = detect_tools(index)
+        self.ts = analyze_project(ts_sources)
 
         # -- source-mode pass: agents, runner calls, call sites, all direct ops
         sites: list[AgentSite] = []
@@ -122,6 +136,12 @@ class Scanner:
                 for cs in res.call_sites:
                     call_sites[cs.callee_fid].append(cs)
 
+        sites += self.ts.agent_sites
+        runners += self.ts.runner_sites
+        direct_ops += self.ts.direct_ops
+        for cs in self.ts.call_sites:
+            call_sites[cs.callee_fid].append(cs)
+
         # bound but undecorated functions are still analysed (resolution inferred_limited)
         for site in sites:
             for ref in site.tools:
@@ -143,7 +163,8 @@ class Scanner:
         self._add_packages(packages, index)
         self._add_tools(tools)
         self._add_fastmcp_servers(tools)
-        self._add_agents(sites, runners, call_sites, tools)
+        self._add_ts_tools()
+        self._add_agents(sites, runners, call_sites, {**tools, **self.ts.tools})
         self._add_mcp_configs(mcp_configs)
         reached = {n.id for n in g.nodes_of("operation")}
         unreached = sorted(
@@ -157,7 +178,9 @@ class Scanner:
             "supported_matrix": SUPPORTED_MATRIX,
             "python_files_analyzed": len({m.relpath for m in self._modules()}),
             "python_files_seen": n_py,
-            "parse_errors": sorted(index.parse_errors, key=lambda d: d["file"]),
+            "ts_js_files_analyzed": self.ts.files - len(self.ts.parse_errors),
+            "ts_js_unparsed_regions": self.ts.skipped_regions,
+            "parse_errors": sorted(index.parse_errors + self.ts.parse_errors, key=lambda d: d["file"]),
             "unreadable_files": sorted(unreadable),
             "config_errors": config_errors,
             "skipped_large_files": walk.skipped_large,
@@ -186,19 +209,23 @@ class Scanner:
 
     def _ev(self, file: str, line: int, detector: str, end: int | None = None, note: str = "", with_snippet: bool = True) -> Evidence:
         mod = self.index.module_for_file(file) if hasattr(self, "index") else None
-        snip = snippet(mod.lines, line) if (mod is not None and with_snippet) else ""
+        lines = mod.lines if mod is not None else (self.ts.lines.get(file) if hasattr(self, "ts") else None)
+        snip = snippet(lines, line) if (lines is not None and with_snippet) else ""
+        if detector.startswith("py.") and hasattr(self, "ts") and file in self.ts.lines:
+            detector = "ts." + detector[3:]  # same detector family, TS/JS source
         return Evidence(file, line, end or line, detector, note, snip)
 
     # ------------------------------------------------------------------
     def _add_packages(self, packages, index: ProjectIndex) -> None:
-        imported = set()
+        imported = set(self.ts.imported_packages)
         for m in self._modules():
             imported |= m.imported_top_modules
         for p in packages:
             self.graph.add_node(Node(
                 f"package:{p.name}", "package", p.name,
                 [Evidence(p.file, p.line, p.line, "manifest.dependency")],
-                {"version_spec": p.version_spec, "imported_in_code": p.import_name in imported, "ai_related": p.name in AI_PACKAGES},
+                {"version_spec": p.version_spec, "imported_in_code": p.import_name in imported or p.name in imported,
+                 "ai_related": p.name in AI_PACKAGES, "ecosystem": p.ecosystem},
             ))
 
     def _add_tools(self, tools: dict[str, ToolInfo]) -> None:
@@ -215,24 +242,49 @@ class Scanner:
             approval = approval_guard(t.contract["annotations"].get("needs_approval"))
             init_env = {p: Taint(frozenset({f"param:{p}"})) for p in t.params}
             r = self.ctx.analyze(t.module, t.func, t.func_qual, init_env, 0, (t.fid,), "tool")
-            for o in r.ops:
+            self._add_tool_ops(t.id, r.ops, approval, "py")
+
+    def _add_ts_tools(self) -> None:
+        g = self.graph
+        for s in self.ts.mcp_servers:
+            g.add_node(Node(s["id"], "mcp_server", s["name"], [self._ev(s["file"], s["line"], "ts.mcp-server")],
+                            {"source": "mcp-ts-sdk", "file": s["file"], "variable": s["var"]}))
+        for tid in sorted(self.ts.tools):
+            t = self.ts.tools[tid]
+            res = CONFIRMED if (t.unit is not None or t.client_executed) else UNKNOWN
+            extra = {}
+            if t.client_executed:
+                extra = {"execution": "client", "note": "no execute handler: the tool call is returned to the application (no server-side operation here)"}
+            elif t.unit is None:
+                extra = {"reason": "tool execute handler not statically resolvable"}
+            g.add_node(Node(t.id, "tool", t.name, [self._ev(t.file, t.line, f"ts.tool-definition.{t.framework}")],
+                            {"framework": t.framework, "file": t.file, "function": t.unit.qual if t.unit else None,
+                             "parameters": t.params, "contract": t.contract, **extra}, resolution=res))
+            if t.mcp_server_id and t.mcp_server_id in g.nodes:
+                g.add_edge(Edge(t.mcp_server_id, t.id, "EXPOSES_TOOL", [self._ev(t.file, t.line, "ts.mcp-tool-registration")]))
+            self._add_tool_ops(t.id, t.ops, approval_guard(t.contract["annotations"].get("needs_approval")), "ts")
+
+    def _add_tool_ops(self, tool_id: str, op_hits, approval, lang: str) -> None:
+        g = self.graph
+        if True:
+            for o in op_hits:
                 attrs = dict(o.attributes)
                 g.add_node(Node(
                     o.op_id, "operation", o.callee,
-                    [self._ev(o.file, o.line, f"py.sensitive-op.{o.category}", o.end_line)],
+                    [self._ev(o.file, o.line, f"{lang}.sensitive-op.{o.category}", o.end_line)],
                     {"category": o.category, "callee": o.callee, "file": o.file, "function": o.func_qual, **attrs},
                     resolution=o.resolution if o.resolution in (UNKNOWN, UNSUPPORTED) else CONFIRMED,
                 ))
                 via = [{"file": f, "line": ln, "caller": c, "callee": ce} for f, ln, c, ce in o.via]
-                ev = [self._ev(f, ln, "py.helper-call") for f, ln, _c, _ce in o.via] + [self._ev(o.file, o.line, f"py.sensitive-op.{o.category}", o.end_line)]
+                ev = [self._ev(f, ln, f"{lang}.helper-call") for f, ln, _c, _ce in o.via] + [self._ev(o.file, o.line, f"{lang}.sensitive-op.{o.category}", o.end_line)]
                 params = sorted({x.split(":", 1)[1] for x in o.origins if x.startswith("param:")})
                 guard, guard_kind = o.guard, ("code" if o.guard != "absent" else None)
                 if approval and params:
                     guard, guard_kind = combine_guard(guard, guard_kind, approval)
                 content_params = sorted({x.split(":", 1)[1] for x in o.content_origins if x.startswith("param:")})
                 g.add_edge(Edge(
-                    t.id, o.op_id, "REACHES_OPERATION", ev, resolution=o.resolution,
-                    scope="supported_python_pattern" if not o.via else f"bounded_helper_chain:{len(o.via)}",
+                    tool_id, o.op_id, "REACHES_OPERATION", ev, resolution=o.resolution,
+                    scope=("supported_python_pattern" if lang == "py" else "supported_ts_pattern") if not o.via else f"bounded_helper_chain:{len(o.via)}",
                     confidence=1.0 if o.resolution == CONFIRMED else (0.6 if o.resolution == INFERRED else 0.0),
                     attributes={
                         "operation_category": o.category,
@@ -250,12 +302,12 @@ class Scanner:
                     key="->".join(v["callee"] for v in via),
                 ))
                 if o.resolution == UNKNOWN:
-                    self.unknowns.append({"kind": "operation", "file": o.file, "line": o.line, "reason": dict(o.attributes).get("reason", f"dynamic call {o.callee}"), "tool": t.id})
+                    self.unknowns.append({"kind": "operation", "file": o.file, "line": o.line, "reason": dict(o.attributes).get("reason", f"dynamic call {o.callee}"), "tool": tool_id})
                 if o.target_kind == "literal" and o.target:
                     rid = f"resource:{o.category}:{o.target}"
                     g.add_node(Node(rid, "resource", o.target, attributes={"category": o.category}))
                     et = "READS_FROM" if o.category == ops.SECRET_ACCESS else "WRITES_TO"
-                    g.add_edge(Edge(o.op_id, rid, et, [self._ev(o.file, o.line, f"py.sensitive-op.{o.category}")]))
+                    g.add_edge(Edge(o.op_id, rid, et, [self._ev(o.file, o.line, f"{lang}.sensitive-op.{o.category}")]))
 
     def _add_fastmcp_servers(self, tools: dict[str, ToolInfo]) -> None:
         g = self.graph
@@ -273,10 +325,17 @@ class Scanner:
     def _resolve_server_file(self, site_file: str, server_file: str) -> list[str]:
         cands = [posixpath.normpath(server_file.replace("\\", "/")), posixpath.normpath(posixpath.join(posixpath.dirname(site_file), server_file.replace("\\", "/")))]
         out = []
+        ts_by_file: dict[str, list[str]] = defaultdict(list)
+        for s in getattr(self, "ts", None).mcp_servers if hasattr(self, "ts") else []:
+            ts_by_file[s["file"]].append(s["id"])
+        for c in list(cands):
+            stem = c.rsplit(".", 1)[0]
+            cands += [stem + e for e in (".ts", ".mts", ".js", ".mjs")]
         for c in cands:
             mod = self.index.module_for_file(c)
             if mod is not None:
                 out += [f"mcp_server:{mod.relpath}:{v}" for v in sorted(mod.fastmcp_vars)]
+            out += ts_by_file.get(c, [])
         return sorted(set(out))
 
     def _agent_id(self, site: AgentSite, used: set[str]) -> str:

@@ -264,6 +264,16 @@ class AnalysisContext:
         return res
 
 
+def _is_validator(func: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    """A helper that raises under a condition on one of its parameters (e.g. a path or allowlist check)."""
+    params = {a.arg for a in list(func.args.posonlyargs) + list(func.args.args) + list(func.args.kwonlyargs)}
+    for node in ast.walk(func):
+        if isinstance(node, ast.If) and node.body and isinstance(node.body[-1], ast.Raise):
+            if {n.id for n in ast.walk(node.test) if isinstance(n, ast.Name)} & params or any(isinstance(n, ast.Name) for n in ast.walk(node.test)):
+                return True
+    return False
+
+
 def _terminates(stmts: list[ast.stmt]) -> bool:
     if not stmts:
         return False
@@ -592,7 +602,12 @@ class FunctionAnalyzer:
             parts += [self.expr_taint(k.value, env) for k in e.keywords]
             if isinstance(e.func, ast.Attribute):
                 parts.append(self.expr_taint(e.func.value, env))
-            return merge(*parts)
+            t = merge(*parts)
+            if t is not None and t.guard == GUARD_ABSENT:
+                target = self.index.lookup_function(q) if q else None
+                if target is not None and _is_validator(target[1]):
+                    t = Taint(t.origins, GUARD_UNKNOWN)  # passes through a validator-style helper we do not model
+            return t
         if isinstance(e, ast.Attribute):
             src = self.source_kind(e)
             if src:

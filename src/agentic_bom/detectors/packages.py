@@ -18,7 +18,9 @@ IMPORT_NAMES = {
     "pillow": "PIL",
     "mcp": "mcp",
 }
-AI_PACKAGES = {"openai-agents", "openai", "anthropic", "mcp", "fastmcp", "langchain", "langchain-core", "langgraph", "langchain-openai", "crewai", "autogen", "llama-index"}
+AI_PACKAGES_NPM = {"@openai/agents", "@openai/agents-core", "ai", "@ai-sdk/openai", "@ai-sdk/anthropic", "@modelcontextprotocol/sdk",
+                   "openai", "@anthropic-ai/sdk", "langchain", "@langchain/core", "@langchain/langgraph", "fastmcp"}
+AI_PACKAGES = AI_PACKAGES_NPM | {"openai-agents", "openai", "anthropic", "mcp", "fastmcp", "langchain", "langchain-core", "langgraph", "langchain-openai", "crewai", "autogen", "llama-index"}
 
 _REQ = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._\-]*)\s*(\[[^\]]*\])?\s*([<>=!~]=?[^;#\s]*(?:\s*,\s*[<>=!~]=?[^;#\s]*)*)?")
 
@@ -29,6 +31,7 @@ class PackageRef:
     version_spec: str
     file: str
     line: int
+    ecosystem: str = "pypi"
 
     @property
     def import_name(self) -> str:
@@ -78,4 +81,28 @@ def parse_pyproject(relpath: str, text: str) -> list[PackageRef]:
             if k and k != "python":
                 ver = re.findall(r"['\"]([^'\"]*)['\"]", v)
                 out.append(PackageRef(normalize(k), ver[0] if ver else "", relpath, i))
+    return out
+
+
+def parse_package_json(relpath: str, text: str) -> list[PackageRef]:
+    """npm dependencies (runtime + dev). Names are kept verbatim (scoped packages included)."""
+    import json
+
+    try:
+        data = json.loads(text)
+    except (ValueError, RecursionError):
+        return []
+    if not isinstance(data, dict):
+        return []
+    out = []
+    lines = text.splitlines()
+    for section in ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies"):
+        deps = data.get(section)
+        if not isinstance(deps, dict):
+            continue
+        for name, ver in sorted(deps.items()):
+            if not isinstance(name, str):
+                continue
+            line = next((i for i, ln in enumerate(lines, 1) if f'"{name}"' in ln), 1)
+            out.append(PackageRef(name[:120], str(ver)[:60] if isinstance(ver, str) else "", relpath, line, "npm"))
     return out

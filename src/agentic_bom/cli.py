@@ -16,7 +16,7 @@ from agentic_bom.core.safety import UnsafeInputError, export_git_revision, shall
 from agentic_bom.exporters.writer import write_diff, write_scan
 from agentic_bom.scanner import scan
 
-SCENARIOS = ("same-bom-new-exposure", "mcp-tool-schema-drift")
+SCENARIOS = ("same-bom-new-exposure", "mcp-tool-schema-drift", "ts-same-bom-new-exposure")
 LEVELS = ("none", "low", "medium", "high")
 CLS_ORDER = ("potentially_exposed", "operation_path", "unknown", "bound_capability", "inventory_only")
 
@@ -56,7 +56,7 @@ def _print_scan(report: dict[str, Any], files: dict[str, Path] | None = None) ->
     for p in sorted(report["paths"], key=lambda p: (CLS_ORDER.index(p["classification"]), p["key"])):
         if p["classification"] == "inventory_only":
             continue
-        ev = [e for e in p["evidence"] if e["detector_id"].startswith("py.sensitive-op")] or p["evidence"]
+        ev = [e for e in p["evidence"] if ".sensitive-op." in e["detector_id"]] or p["evidence"]
         loc = f"{ev[-1]['file']}:{ev[-1]['line_start']}" if ev else "?"
         tool = p.get("tool_name") or "(tools not statically resolvable)"
         print(f"   [{p['classification']}/{p['severity']}] {p.get('entry_name') or 'unbound'}{''.join(' => ' + d for d in p.get('delegation') or [])} -> {tool} -> "

@@ -1,0 +1,43 @@
+{
+  "case": "ts-express-handoff",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "triage",
+    "ops"
+  ],
+  "tools": [
+    "cleanup_export",
+    "restart"
+  ],
+  "bindings": [
+    [
+      "triage",
+      "cleanup_export"
+    ],
+    [
+      "ops",
+      "restart"
+    ]
+  ],
+  "paths": [
+    [
+      "triage",
+      "cleanup_export",
+      "cloud_sdk_call",
+      "potentially_exposed"
+    ],
+    [
+      "ops",
+      "restart",
+      "process_execution",
+      "operation_path"
+    ],
+    [
+      "triage",
+      "restart",
+      "process_execution",
+      "operation_path"
+    ]
+  ],
+  "notes": "Express req.body -> instructions; class receiver Storage.remove -> S3 DeleteObjectCommand; handoff to ops whose tool needsApproval (known guard)."
+}

@@ -1,0 +1,48 @@
+{
+  "case": "ts-mcp-server",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "notes-assistant"
+  ],
+  "tools": [
+    "save_note",
+    "echo"
+  ],
+  "bindings": [
+    [
+      "notes-assistant",
+      "save_note"
+    ],
+    [
+      "notes-assistant",
+      "echo"
+    ]
+  ],
+  "paths": [
+    [
+      "notes-assistant",
+      "save_note",
+      "filesystem_write",
+      "operation_path"
+    ],
+    [
+      "notes-assistant",
+      "save_note",
+      "network_state_change",
+      "operation_path"
+    ],
+    [
+      "notes",
+      "save_note",
+      "filesystem_write",
+      "operation_path"
+    ],
+    [
+      "notes",
+      "save_note",
+      "network_state_change",
+      "operation_path"
+    ]
+  ],
+  "notes": "MCP TS SDK registerTool; regex guard on name (known); mirrorUrl controls fetch POST destination."
+}

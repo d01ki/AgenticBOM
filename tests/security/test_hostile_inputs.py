@@ -138,3 +138,18 @@ def test_tar_extraction_blocks_traversal_and_links(tmp_path):
     safe_extract_tar(buf, dest)
     assert sorted(p.name for p in dest.rglob("*")) == ["ok.py"]
     assert not (tmp_path / "evil.py").exists()
+
+
+def test_ts_pathological_inputs_are_bounded(make_project):
+    import time
+    root = make_project({
+        "nested.ts": "const a = `" + "${`" * 400 + "x" + "`}" * 400 + "`;\n",
+        "deep.ts": "const x = " + "[" * 4000 + "]" * 4000 + ";\n",
+        "secret.ts": "import { Agent } from '@openai/agents';\nexport const a = new Agent({ name: 'a', instructions: 'key=sk-proj-THISISASECRETKEYVALUE1234567890' });\n",
+    })
+    t = time.perf_counter()
+    r = scan(root)
+    assert time.perf_counter() - t < 30
+    assert "nested.ts" in {e["file"] for e in r["coverage"]["parse_errors"]}
+    assert r["summary"]["agents"] == 1
+    assert "sk-proj-THISISASECRETKEYVALUE" not in json.dumps(r)

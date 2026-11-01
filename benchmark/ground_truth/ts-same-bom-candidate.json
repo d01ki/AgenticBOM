@@ -1,0 +1,30 @@
+{
+  "case": "ts-same-bom-candidate",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "support-triage"
+  ],
+  "tools": [
+    "lookup_order",
+    "run_diagnostic"
+  ],
+  "bindings": [
+    [
+      "support-triage",
+      "lookup_order"
+    ],
+    [
+      "support-triage",
+      "run_diagnostic"
+    ]
+  ],
+  "paths": [
+    [
+      "support-triage",
+      "run_diagnostic",
+      "process_execution",
+      "potentially_exposed"
+    ]
+  ],
+  "notes": "stdin via readFileSync(0) -> buildAgent(ticket) -> instructions; target -> promisify(exec) shell command via cross-file helper."
+}

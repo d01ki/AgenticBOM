@@ -1,0 +1,15 @@
+{
+  "case": "drift-ts-same-bom-1",
+  "annotator": "tool author (not independent)",
+  "bom_delta": "unchanged",
+  "findings": [
+    [
+      "new_bound_sensitive_operation",
+      "run_diagnostic"
+    ],
+    [
+      "new_untrusted_to_privileged_path",
+      "support-triage"
+    ]
+  ]
+}

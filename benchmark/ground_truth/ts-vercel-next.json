@@ -1,0 +1,30 @@
+{
+  "case": "ts-vercel-next",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "generateText in POST"
+  ],
+  "tools": [
+    "saveDraft",
+    "webSearchPreview"
+  ],
+  "bindings": [
+    [
+      "generateText in POST",
+      "saveDraft"
+    ],
+    [
+      "generateText in POST",
+      "webSearchPreview"
+    ]
+  ],
+  "paths": [
+    [
+      "generateText in POST",
+      "saveDraft",
+      "filesystem_write",
+      "potentially_exposed"
+    ]
+  ],
+  "notes": "Next.js route POST(req): req.json() context -> system prompt; provider-hosted web search has no host operation."
+}
