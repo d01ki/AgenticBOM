@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "aem/capability-graph/0.1.0",
+  "title": "AEM capability graph",
+  "type": "object",
+  "required": ["schema_version", "tool", "scope", "graph", "paths", "coverage", "summary"],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "tool": {"type": "object", "required": ["name", "version"]},
+    "scope": {"type": "object", "required": ["label"]},
+    "graph": {
+      "type": "object",
+      "required": ["nodes", "edges"],
+      "properties": {
+        "nodes": {"type": "array", "items": {"$ref": "#/$defs/node"}},
+        "edges": {"type": "array", "items": {"$ref": "#/$defs/edge"}}
+      }
+    },
+    "paths": {"type": "array", "items": {"$ref": "#/$defs/path"}},
+    "coverage": {"type": "object", "required": ["supported_matrix", "unknowns", "statement"]},
+    "summary": {"type": "object"}
+  },
+  "$defs": {
+    "resolution": {"enum": ["confirmed_static", "inferred_limited", "unknown", "unsupported"]},
+    "evidence": {
+      "type": "object",
+      "required": ["file", "line_start", "line_end", "detector_id"],
+      "properties": {
+        "file": {"type": "string"},
+        "line_start": {"type": "integer", "minimum": 1},
+        "line_end": {"type": "integer", "minimum": 1},
+        "detector_id": {"type": "string", "pattern": "^[a-z0-9_.-]+$"}
+      }
+    },
+    "node": {
+      "type": "object",
+      "required": ["id", "kind", "name", "resolution", "attributes", "evidence"],
+      "properties": {
+        "id": {"type": "string"},
+        "kind": {"enum": ["application", "agent", "model", "prompt", "mcp_client", "mcp_server", "tool", "skill", "data_source", "operation", "resource", "package", "trust_boundary", "identity_reference"]},
+        "name": {"type": "string"},
+        "resolution": {"$ref": "#/$defs/resolution"},
+        "attributes": {"type": "object"},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}}
+      }
+    },
+    "edge": {
+      "type": "object",
+      "required": ["source", "target", "type", "evidence", "resolution", "scope", "confidence"],
+      "properties": {
+        "source": {"type": "string"},
+        "target": {"type": "string"},
+        "type": {"enum": ["USES_MODEL", "BINDS_TOOL", "CALLS_TOOL", "EXPOSES_TOOL", "USES_SKILL", "READS_FROM", "WRITES_TO", "REACHES_OPERATION", "FLOWS_TO", "CROSSES_TRUST_BOUNDARY", "DELEGATES_TO", "REFERENCES_IDENTITY", "CONNECTS_MCP"]},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+        "resolution": {"$ref": "#/$defs/resolution"},
+        "scope": {"type": "string"},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "path": {
+      "type": "object",
+      "required": ["id", "key", "classification", "severity", "resolution", "nodes", "edges", "evidence", "unknowns", "guard_status", "exposure_reason", "remediation", "statements"],
+      "properties": {
+        "classification": {"enum": ["inventory_only", "bound_capability", "operation_path", "potentially_exposed", "unknown"]},
+        "severity": {"enum": ["info", "low", "medium", "high"]},
+        "resolution": {"$ref": "#/$defs/resolution"},
+        "guard_status": {"enum": ["known", "absent", "unknown", "not_applicable"]},
+        "nodes": {"type": "array", "items": {"type": "string"}},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+        "unknowns": {"type": "array", "items": {"type": "string"}},
+        "statements": {
+          "type": "object",
+          "required": ["static_possible", "runtime_observed", "authorization_verified"],
+          "properties": {
+            "static_possible": {"type": "boolean"},
+            "runtime_observed": {"const": false},
+            "authorization_verified": {"const": false}
+          }
+        }
+      }
+    }
+  }
+}

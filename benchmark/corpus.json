@@ -1,0 +1,141 @@
+{
+  "name": "AEM bundled synthetic corpus v0.1",
+  "base_dir": "..",
+  "caveats": [
+    "Synthetic fixtures written by the tool author; ground truth annotated by the same author (not independent). These numbers show the tool behaves as designed on its own fixtures; they are NOT evidence of ecosystem accuracy.",
+    "External pinned public-repository evaluation is tracked separately (see docs/implementation-status.md)."
+  ],
+  "cases": [
+    {
+      "id": "same-bom-baseline",
+      "type": "scan",
+      "path": "examples/same-bom-new-exposure/baseline",
+      "label": "negative",
+      "ground_truth": "benchmark/ground_truth/same-bom-baseline.json"
+    },
+    {
+      "id": "same-bom-candidate",
+      "type": "scan",
+      "path": "examples/same-bom-new-exposure/candidate",
+      "label": "positive",
+      "ground_truth": "benchmark/ground_truth/same-bom-candidate.json"
+    },
+    {
+      "id": "same-bom-fixed",
+      "type": "scan",
+      "path": "examples/same-bom-new-exposure/fixed",
+      "label": "positive (guarded)",
+      "ground_truth": "benchmark/ground_truth/same-bom-fixed.json"
+    },
+    {
+      "id": "mcp-candidate",
+      "type": "scan",
+      "path": "examples/mcp-tool-schema-drift/candidate",
+      "label": "positive",
+      "ground_truth": "benchmark/ground_truth/mcp-candidate.json"
+    },
+    {
+      "id": "langgraph-flask-delete",
+      "type": "scan",
+      "path": "benchmark/cases/langgraph-flask-delete",
+      "label": "positive",
+      "ground_truth": "benchmark/ground_truth/langgraph-flask-delete.json"
+    },
+    {
+      "id": "fastapi-eval-cloud",
+      "type": "scan",
+      "path": "benchmark/cases/fastapi-eval-cloud",
+      "label": "positive",
+      "ground_truth": "benchmark/ground_truth/fastapi-eval-cloud.json"
+    },
+    {
+      "id": "helper-chain-depth",
+      "type": "scan",
+      "path": "benchmark/cases/helper-chain-depth",
+      "label": "positive + depth limit",
+      "ground_truth": "benchmark/ground_truth/helper-chain-depth.json"
+    },
+    {
+      "id": "neg-unbound-helper",
+      "type": "scan",
+      "path": "examples/negative-controls/unbound-helper",
+      "label": "negative",
+      "ground_truth": "benchmark/ground_truth/neg-unbound-helper.json"
+    },
+    {
+      "id": "neg-fixed-command",
+      "type": "scan",
+      "path": "examples/negative-controls/fixed-command",
+      "label": "negative",
+      "ground_truth": "benchmark/ground_truth/neg-fixed-command.json"
+    },
+    {
+      "id": "neg-user-role-only",
+      "type": "scan",
+      "path": "examples/negative-controls/user-role-only",
+      "label": "negative (for potentially_exposed)",
+      "ground_truth": "benchmark/ground_truth/neg-user-role-only.json"
+    },
+    {
+      "id": "neg-test-fixture-excluded",
+      "type": "scan",
+      "path": "examples/negative-controls/test-fixture-excluded",
+      "label": "negative",
+      "ground_truth": "benchmark/ground_truth/neg-test-fixture-excluded.json"
+    },
+    {
+      "id": "neg-dynamic-dispatch",
+      "type": "scan",
+      "path": "examples/negative-controls/dynamic-dispatch",
+      "label": "unknown control",
+      "ground_truth": "benchmark/ground_truth/neg-dynamic-dispatch.json"
+    },
+    {
+      "id": "neg-unsupported-guard",
+      "type": "scan",
+      "path": "examples/negative-controls/unsupported-guard",
+      "label": "unknown control",
+      "ground_truth": "benchmark/ground_truth/neg-unsupported-guard.json"
+    },
+    {
+      "id": "drift-same-bom-1",
+      "type": "drift",
+      "base": "examples/same-bom-new-exposure/baseline",
+      "head": "examples/same-bom-new-exposure/candidate",
+      "label": "drift",
+      "ground_truth": "benchmark/ground_truth/drift-same-bom-1.json"
+    },
+    {
+      "id": "drift-same-bom-2",
+      "type": "drift",
+      "base": "examples/same-bom-new-exposure/candidate",
+      "head": "examples/same-bom-new-exposure/fixed",
+      "label": "drift",
+      "ground_truth": "benchmark/ground_truth/drift-same-bom-2.json"
+    },
+    {
+      "id": "drift-mcp-1",
+      "type": "drift",
+      "base": "examples/mcp-tool-schema-drift/baseline",
+      "head": "examples/mcp-tool-schema-drift/candidate",
+      "label": "drift",
+      "ground_truth": "benchmark/ground_truth/drift-mcp-1.json"
+    },
+    {
+      "id": "drift-mcp-2",
+      "type": "drift",
+      "base": "examples/mcp-tool-schema-drift/candidate",
+      "head": "examples/mcp-tool-schema-drift/fixed",
+      "label": "drift",
+      "ground_truth": "benchmark/ground_truth/drift-mcp-2.json"
+    },
+    {
+      "id": "drift-identical",
+      "type": "drift",
+      "base": "examples/same-bom-new-exposure/baseline",
+      "head": "examples/same-bom-new-exposure/baseline",
+      "label": "drift",
+      "ground_truth": "benchmark/ground_truth/drift-identical.json"
+    }
+  ]
+}

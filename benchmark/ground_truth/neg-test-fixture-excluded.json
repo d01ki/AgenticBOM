@@ -1,0 +1,9 @@
+{
+  "case": "neg-test-fixture-excluded",
+  "annotator": "tool author (not independent)",
+  "agents": [],
+  "tools": [],
+  "bindings": [],
+  "paths": [],
+  "notes": "Only agent lives in tests/; excluded by default."
+}

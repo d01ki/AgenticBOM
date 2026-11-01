@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "notes": {"command": "python", "args": ["server.py"], "env": {"NOTES_TOKEN": "do-not-copy-this-value"}}
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "case": "same-bom-baseline",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "support-triage"
+  ],
+  "tools": [
+    "lookup_order",
+    "run_diagnostic"
+  ],
+  "bindings": [
+    [
+      "support-triage",
+      "lookup_order"
+    ],
+    [
+      "support-triage",
+      "run_diagnostic"
+    ]
+  ],
+  "paths": [],
+  "notes": "Baseline: run_diagnostic only performs a dict lookup. admin.py calls restart_service (subprocess) but is not an agent tool."
+}

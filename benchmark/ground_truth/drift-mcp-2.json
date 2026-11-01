@@ -1,0 +1,15 @@
+{
+  "case": "drift-mcp-2",
+  "annotator": "tool author (not independent)",
+  "bom_delta": "unchanged",
+  "findings": [
+    [
+      "tool_contract_changed",
+      "save_note"
+    ],
+    [
+      "capability_removed",
+      "save_note"
+    ]
+  ]
+}

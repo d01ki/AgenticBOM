@@ -1,0 +1,29 @@
+{
+  "case": "neg-dynamic-dispatch",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "plugin-agent",
+    "maintenance"
+  ],
+  "tools": [
+    "run_action"
+  ],
+  "bindings": [
+    [
+      "maintenance",
+      "run_action"
+    ]
+  ],
+  "paths": [],
+  "expected_unknowns": [
+    [
+      "maintenance",
+      "run_action"
+    ],
+    [
+      "plugin-agent",
+      "unresolved tool"
+    ]
+  ],
+  "notes": "getattr dispatch and tools=load_tools() are statically unresolvable."
+}

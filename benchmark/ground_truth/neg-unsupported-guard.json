@@ -1,0 +1,24 @@
+{
+  "case": "neg-unsupported-guard",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "guarded-runner"
+  ],
+  "tools": [
+    "run"
+  ],
+  "bindings": [
+    [
+      "guarded-runner",
+      "run"
+    ]
+  ],
+  "paths": [],
+  "expected_unknowns": [
+    [
+      "guarded-runner",
+      "run"
+    ]
+  ],
+  "notes": "Guard is a project validator (is_safe_command) the tool does not model -> UNKNOWN, not safe/critical."
+}

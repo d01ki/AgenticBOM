@@ -1,0 +1,30 @@
+{
+  "case": "langgraph-flask-delete",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "report-manager"
+  ],
+  "tools": [
+    "delete_report",
+    "list_reports"
+  ],
+  "bindings": [
+    [
+      "report-manager",
+      "delete_report"
+    ],
+    [
+      "report-manager",
+      "list_reports"
+    ]
+  ],
+  "paths": [
+    [
+      "report-manager",
+      "delete_report",
+      "filesystem_delete",
+      "potentially_exposed"
+    ]
+  ],
+  "notes": "flask.request JSON is interpolated into the LangGraph prompt; os.listdir is a read and not a recognised sensitive operation."
+}

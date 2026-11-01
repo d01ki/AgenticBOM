@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "aem/security-drift/0.1.0",
+  "title": "AEM security-semantic drift",
+  "type": "object",
+  "required": ["schema_version", "tool", "base", "head", "bom_delta", "banner", "findings", "counts", "statement"],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "bom_delta": {"type": "object", "required": ["status", "added", "removed", "modified"], "properties": {"status": {"enum": ["unchanged", "changed"]}}},
+    "banner": {"type": ["string", "null"]},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "rule_id", "kind", "title", "severity", "message", "subject", "bom_delta", "security_delta", "guidance", "gate_eligible"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^AEM-[0-9a-f]{12}$"},
+          "rule_id": {"type": "string", "pattern": "^AEM-D[0-9]{3}$"},
+          "kind": {"enum": ["new_bound_sensitive_operation", "new_untrusted_to_privileged_path", "operation_target_expanded", "tool_contract_changed", "capability_removed", "review_required"]},
+          "severity": {"enum": ["info", "low", "medium", "high"]},
+          "bom_delta": {"enum": ["unchanged", "changed"]},
+          "gate_eligible": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}

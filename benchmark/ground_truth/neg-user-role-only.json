@@ -1,0 +1,25 @@
+{
+  "case": "neg-user-role-only",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "upload-janitor"
+  ],
+  "tools": [
+    "delete_upload"
+  ],
+  "bindings": [
+    [
+      "upload-janitor",
+      "delete_upload"
+    ]
+  ],
+  "paths": [
+    [
+      "upload-janitor",
+      "delete_upload",
+      "filesystem_delete",
+      "operation_path"
+    ]
+  ],
+  "notes": "Untrusted stdin only in user-role message; must NOT be potentially_exposed."
+}

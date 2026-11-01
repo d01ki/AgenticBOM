@@ -1,0 +1,26 @@
+{
+  "case": "neg-unbound-helper",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "clock"
+  ],
+  "tools": [
+    "get_time",
+    "wipe_cache"
+  ],
+  "bindings": [
+    [
+      "clock",
+      "get_time"
+    ]
+  ],
+  "paths": [
+    [
+      "-",
+      "wipe_cache",
+      "filesystem_delete",
+      "inventory_only"
+    ]
+  ],
+  "notes": "wipe_cache is a tool but unbound; purge() is a plain helper."
+}

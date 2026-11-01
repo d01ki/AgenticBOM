@@ -1,0 +1,911 @@
+{
+  "all_cases_ran": true,
+  "cases": [
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "paths": {
+          "f1": null,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": null,
+          "recall": null,
+          "tp": 0
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "same-bom-baseline",
+      "label": "negative",
+      "ok": true,
+      "peak_bytes": 1076361,
+      "seconds": 0.0196,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "paths": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "same-bom-candidate",
+      "label": "positive",
+      "ok": true,
+      "peak_bytes": 1051254,
+      "seconds": 0.0229,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "paths": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "same-bom-fixed",
+      "label": "positive (guarded)",
+      "ok": true,
+      "peak_bytes": 1051297,
+      "seconds": 0.0204,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "paths": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 4
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "mcp-candidate",
+      "label": "positive",
+      "ok": true,
+      "peak_bytes": 1029903,
+      "seconds": 0.0204,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "paths": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "langgraph-flask-delete",
+      "label": "positive",
+      "ok": true,
+      "peak_bytes": 1011540,
+      "seconds": 0.0096,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 3
+        },
+        "paths": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 3
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "fastapi-eval-cloud",
+      "label": "positive",
+      "ok": true,
+      "peak_bytes": 1011500,
+      "seconds": 0.0117,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "paths": {
+          "f1": 0.6666666666666666,
+          "fn": 1,
+          "fn_items": [
+            [
+              "recorder",
+              "write_deep",
+              "filesystem_write",
+              "operation_path"
+            ]
+          ],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 0.5,
+          "tp": 1
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "unknowns": {
+          "expected": 1,
+          "missing": [],
+          "reported_on_expected": 1,
+          "unexpected": []
+        }
+      },
+      "id": "helper-chain-depth",
+      "label": "positive + depth limit",
+      "ok": true,
+      "peak_bytes": 1042661,
+      "seconds": 0.0212,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 1
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "paths": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "neg-unbound-helper",
+      "label": "negative",
+      "ok": true,
+      "peak_bytes": 1011542,
+      "seconds": 0.008,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "paths": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "neg-fixed-command",
+      "label": "negative",
+      "ok": true,
+      "peak_bytes": 1011481,
+      "seconds": 0.0081,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "paths": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "neg-user-role-only",
+      "label": "negative (for potentially_exposed)",
+      "ok": true,
+      "peak_bytes": 1011487,
+      "seconds": 0.0076,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": null,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": null,
+          "recall": null,
+          "tp": 0
+        },
+        "bindings": {
+          "f1": null,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": null,
+          "recall": null,
+          "tp": 0
+        },
+        "paths": {
+          "f1": null,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": null,
+          "recall": null,
+          "tp": 0
+        },
+        "tools": {
+          "f1": null,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": null,
+          "recall": null,
+          "tp": 0
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "neg-test-fixture-excluded",
+      "label": "negative",
+      "ok": true,
+      "peak_bytes": 1012201,
+      "seconds": 0.0059,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "paths": {
+          "f1": null,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": null,
+          "recall": null,
+          "tp": 0
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "unknowns": {
+          "expected": 2,
+          "missing": [],
+          "reported_on_expected": 2,
+          "unexpected": []
+        }
+      },
+      "id": "neg-dynamic-dispatch",
+      "label": "unknown control",
+      "ok": true,
+      "peak_bytes": 1015373,
+      "seconds": 0.0112,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 3
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "paths": {
+          "f1": null,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": null,
+          "recall": null,
+          "tp": 0
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "unknowns": {
+          "expected": 1,
+          "missing": [],
+          "reported_on_expected": 1,
+          "unexpected": []
+        }
+      },
+      "id": "neg-unsupported-guard",
+      "label": "unknown control",
+      "ok": true,
+      "peak_bytes": 1024019,
+      "seconds": 0.0111,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "bom_delta_actual": "unchanged",
+        "bom_delta_correct": true,
+        "bom_delta_expected": "unchanged",
+        "f1": 1.0,
+        "fn": 0,
+        "fn_items": [],
+        "fp": 0,
+        "fp_items": [],
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 2
+      },
+      "id": "drift-same-bom-1",
+      "label": "drift",
+      "ok": true,
+      "peak_bytes": 1075026,
+      "seconds": 0.0394,
+      "type": "drift"
+    },
+    {
+      "eval": {
+        "bom_delta_actual": "unchanged",
+        "bom_delta_correct": true,
+        "bom_delta_expected": "unchanged",
+        "f1": 1.0,
+        "fn": 0,
+        "fn_items": [],
+        "fp": 0,
+        "fp_items": [],
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 2
+      },
+      "id": "drift-same-bom-2",
+      "label": "drift",
+      "ok": true,
+      "peak_bytes": 1087748,
+      "seconds": 0.0406,
+      "type": "drift"
+    },
+    {
+      "eval": {
+        "bom_delta_actual": "changed",
+        "bom_delta_correct": true,
+        "bom_delta_expected": "changed",
+        "f1": 1.0,
+        "fn": 0,
+        "fn_items": [],
+        "fp": 0,
+        "fp_items": [],
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 2
+      },
+      "id": "drift-mcp-1",
+      "label": "drift",
+      "ok": true,
+      "peak_bytes": 1064701,
+      "seconds": 0.038,
+      "type": "drift"
+    },
+    {
+      "eval": {
+        "bom_delta_actual": "unchanged",
+        "bom_delta_correct": true,
+        "bom_delta_expected": "unchanged",
+        "f1": 1.0,
+        "fn": 0,
+        "fn_items": [],
+        "fp": 0,
+        "fp_items": [],
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 2
+      },
+      "id": "drift-mcp-2",
+      "label": "drift",
+      "ok": true,
+      "peak_bytes": 1075793,
+      "seconds": 0.0389,
+      "type": "drift"
+    },
+    {
+      "eval": {
+        "bom_delta_actual": "unchanged",
+        "bom_delta_correct": true,
+        "bom_delta_expected": "unchanged",
+        "f1": null,
+        "fn": 0,
+        "fn_items": [],
+        "fp": 0,
+        "fp_items": [],
+        "precision": null,
+        "recall": null,
+        "tp": 0
+      },
+      "id": "drift-identical",
+      "label": "drift",
+      "ok": true,
+      "peak_bytes": 1069319,
+      "seconds": 0.0363,
+      "type": "drift"
+    }
+  ],
+  "caveats": [
+    "Synthetic fixtures written by the tool author; ground truth annotated by the same author (not independent). These numbers show the tool behaves as designed on its own fixtures; they are NOT evidence of ecosystem accuracy.",
+    "External pinned public-repository evaluation is tracked separately (see docs/implementation-status.md)."
+  ],
+  "corpus": "AEM bundled synthetic corpus v0.1",
+  "summary": {
+    "agents": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 13
+    },
+    "bindings": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 20
+    },
+    "drift_findings": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 8
+    },
+    "expected_unknowns": {
+      "expected": 4,
+      "reported_as_unknown": 4
+    },
+    "max_peak_bytes": 1087748,
+    "median_case_seconds": 0.0204,
+    "paths": {
+      "f1": 0.962962962962963,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.9285714285714286,
+      "tp": 13
+    },
+    "tools": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 21
+    }
+  }
+}
