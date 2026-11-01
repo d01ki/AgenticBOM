@@ -53,8 +53,8 @@
       "id": "same-bom-baseline",
       "label": "negative",
       "ok": true,
-      "peak_bytes": 1076361,
-      "seconds": 0.0196,
+      "peak_bytes": 1077593,
+      "seconds": 0.0197,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -111,7 +111,7 @@
       "label": "positive",
       "ok": true,
       "peak_bytes": 1051254,
-      "seconds": 0.0229,
+      "seconds": 0.0223,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -168,7 +168,7 @@
       "label": "positive (guarded)",
       "ok": true,
       "peak_bytes": 1051297,
-      "seconds": 0.0204,
+      "seconds": 0.0223,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -225,7 +225,7 @@
       "label": "positive",
       "ok": true,
       "peak_bytes": 1029903,
-      "seconds": 0.0204,
+      "seconds": 0.0214,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -282,7 +282,7 @@
       "label": "positive",
       "ok": true,
       "peak_bytes": 1011540,
-      "seconds": 0.0096,
+      "seconds": 0.0093,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -403,7 +403,7 @@
       "label": "positive + depth limit",
       "ok": true,
       "peak_bytes": 1042661,
-      "seconds": 0.0212,
+      "seconds": 0.0219,
       "type": "scan",
       "unsupported_or_unknown_constructs": 1
     },
@@ -460,7 +460,7 @@
       "label": "negative",
       "ok": true,
       "peak_bytes": 1011542,
-      "seconds": 0.008,
+      "seconds": 0.0085,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -517,7 +517,7 @@
       "label": "negative",
       "ok": true,
       "peak_bytes": 1011481,
-      "seconds": 0.0081,
+      "seconds": 0.0074,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -631,7 +631,7 @@
       "label": "negative",
       "ok": true,
       "peak_bytes": 1012201,
-      "seconds": 0.0059,
+      "seconds": 0.0057,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -688,7 +688,7 @@
       "label": "unknown control",
       "ok": true,
       "peak_bytes": 1015373,
-      "seconds": 0.0112,
+      "seconds": 0.0114,
       "type": "scan",
       "unsupported_or_unknown_constructs": 3
     },
@@ -745,7 +745,178 @@
       "label": "unknown control",
       "ok": true,
       "peak_bytes": 1024019,
-      "seconds": 0.0111,
+      "seconds": 0.0105,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 3
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "paths": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 4
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "delegation",
+      "label": "positive (delegation)",
+      "ok": true,
+      "peak_bytes": 1029202,
+      "seconds": 0.0149,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "paths": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "library-tools",
+      "label": "positive (library model)",
+      "ok": true,
+      "peak_bytes": 1011478,
+      "seconds": 0.0062,
+      "type": "scan",
+      "unsupported_or_unknown_constructs": 0
+    },
+    {
+      "eval": {
+        "agents": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "bindings": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "paths": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "tools": {
+          "f1": 1.0,
+          "fn": 0,
+          "fn_items": [],
+          "fp": 0,
+          "fp_items": [],
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 2
+        },
+        "unknowns": {
+          "expected": 0,
+          "missing": [],
+          "reported_on_expected": 0,
+          "unexpected": []
+        }
+      },
+      "id": "class-receiver",
+      "label": "positive (method receivers)",
+      "ok": true,
+      "peak_bytes": 1023441,
+      "seconds": 0.0139,
       "type": "scan",
       "unsupported_or_unknown_constructs": 0
     },
@@ -766,8 +937,8 @@
       "id": "drift-same-bom-1",
       "label": "drift",
       "ok": true,
-      "peak_bytes": 1075026,
-      "seconds": 0.0394,
+      "peak_bytes": 1078383,
+      "seconds": 0.0386,
       "type": "drift"
     },
     {
@@ -787,8 +958,8 @@
       "id": "drift-same-bom-2",
       "label": "drift",
       "ok": true,
-      "peak_bytes": 1087748,
-      "seconds": 0.0406,
+      "peak_bytes": 1090437,
+      "seconds": 0.0433,
       "type": "drift"
     },
     {
@@ -808,8 +979,8 @@
       "id": "drift-mcp-1",
       "label": "drift",
       "ok": true,
-      "peak_bytes": 1064701,
-      "seconds": 0.038,
+      "peak_bytes": 1066661,
+      "seconds": 0.0377,
       "type": "drift"
     },
     {
@@ -829,8 +1000,8 @@
       "id": "drift-mcp-2",
       "label": "drift",
       "ok": true,
-      "peak_bytes": 1075793,
-      "seconds": 0.0389,
+      "peak_bytes": 1079270,
+      "seconds": 0.0387,
       "type": "drift"
     },
     {
@@ -850,8 +1021,8 @@
       "id": "drift-identical",
       "label": "drift",
       "ok": true,
-      "peak_bytes": 1069319,
-      "seconds": 0.0363,
+      "peak_bytes": 1070837,
+      "seconds": 0.0454,
       "type": "drift"
     }
   ],
@@ -867,7 +1038,7 @@
       "fp": 0,
       "precision": 1.0,
       "recall": 1.0,
-      "tp": 13
+      "tp": 18
     },
     "bindings": {
       "f1": 1.0,
@@ -875,7 +1046,7 @@
       "fp": 0,
       "precision": 1.0,
       "recall": 1.0,
-      "tp": 20
+      "tp": 26
     },
     "drift_findings": {
       "f1": 1.0,
@@ -889,15 +1060,15 @@
       "expected": 4,
       "reported_as_unknown": 4
     },
-    "max_peak_bytes": 1087748,
-    "median_case_seconds": 0.0204,
+    "max_peak_bytes": 1090437,
+    "median_case_seconds": 0.0149,
     "paths": {
-      "f1": 0.962962962962963,
+      "f1": 0.9767441860465117,
       "fn": 1,
       "fp": 0,
       "precision": 1.0,
-      "recall": 0.9285714285714286,
-      "tp": 13
+      "recall": 0.9545454545454546,
+      "tp": 21
     },
     "tools": {
       "f1": 1.0,
@@ -905,7 +1076,7 @@
       "fp": 0,
       "precision": 1.0,
       "recall": 1.0,
-      "tp": 21
+      "tp": 27
     }
   }
 }

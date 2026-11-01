@@ -59,7 +59,7 @@ def _print_scan(report: dict[str, Any], files: dict[str, Path] | None = None) ->
         ev = [e for e in p["evidence"] if e["detector_id"].startswith("py.sensitive-op")] or p["evidence"]
         loc = f"{ev[-1]['file']}:{ev[-1]['line_start']}" if ev else "?"
         tool = p.get("tool_name") or "(tools not statically resolvable)"
-        print(f"   [{p['classification']}/{p['severity']}] {p.get('entry_name') or 'unbound'} -> {tool} -> "
+        print(f"   [{p['classification']}/{p['severity']}] {p.get('entry_name') or 'unbound'}{''.join(' => ' + d for d in p.get('delegation') or [])} -> {tool} -> "
               f"{p.get('operation_callee') or '?'} ({loc}) guard={p['guard_status']}")
         for u in p["unknowns"]:
             print(f"       unknown: {u}")

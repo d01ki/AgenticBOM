@@ -14,11 +14,13 @@ AEM reports **static possibilities inside a stated scope**. It does not prove ex
 | Gap | Effect |
 |---|---|
 | TypeScript/JavaScript (Vercel AI SDK, OpenAI Agents TS) | Not analysed. The file count is reported under `unsupported_languages_present`. |
-| `agent.as_tool()`, handoff-reachable tools | `as_tool` gives `unknown`. `handoffs` are recorded as `DELEGATES_TO` but paths are not propagated through delegation. |
-| Library or hosted tools (`WebSearchTool`, `HostedMCPTool`, `ShellTool`, …) | `unsupported` tool node, `unknown` path. |
+| Delegation (`handoffs`, `handoff()`, `agent.as_tool()`) | Followed for up to 2 hops, cycle-safe. Delegated paths are always `inferred_limited` and therefore never gate-eligible, because the sub-agent's own instructions may refuse or transform the call. Agents passed in through dynamic expressions become `unknown`. |
+| Library tools | Only the tools in `LIBRARY_TOOLS` (LangChain `ShellTool`, `PythonREPLTool`, file-management and requests tools, `FileManagementToolkit.get_tools()`, OpenAI `ShellTool`/`LocalShellTool`) are modelled, from their *documented* behaviour (`inferred_limited`; the library source is not analysed). Other library tools give `unknown`. |
+| Provider-hosted tools (`WebSearchTool`, `FileSearchTool`, `CodeInterpreterTool`, `ImageGenerationTool`, `ShellTool` in a hosted container) | Recorded as bound tools with **no host-side operation**. Risk inside the provider's sandbox is out of scope. `HostedMCPTool` stays `unknown`. |
+| `needs_approval` | A literal `True` is treated as a `known` guard of kind `human_approval`. Any non-literal value gives `unknown`. AEM does not check that the approval UI or callback really blocks execution. |
 | Remote MCP servers, or servers outside the repo | `unknown` server, tools not enumerated. |
-| Helper chains longer than 3 hops | `unknown` (`helper chain exceeds 3 hops`). These can be noisy on repositories that vendor large libraries; see the MCP SDK external scan. |
-| Method calls on objects without inferred types | Not followed (only `pathlib.Path` and `boto3` clients are typed). A sink behind `self.client.run(x)` is missed. Unlike dynamic dispatch, this is a silent false-negative class. |
+| Helper chains longer than 3 hops | `unknown` only when a recognised sink is still syntactically reachable beyond the limit (an over-approximation). Large vendored frameworks can still produce some of these. |
+| Method calls on objects without inferred types | Types are inferred for `pathlib.Path`, `boto3` clients, project classes (`x = Cls()`, `Cls().m()`) and `self.attr` assigned in that class's methods. Receivers from parameters, factories or containers are still untyped, so sinks behind them are silently missed. |
 | Class-based tools, `FunctionTool(...)` built by hand, dynamic `instructions` callables | `unknown` or not detected. |
 | Untrusted sources | Only the listed APIs and route parameters. Message queues, files, DB reads and email are not modelled. |
 | Guards | Only the listed patterns are `known`. Path normalisation checks (`realpath(...).startswith(base)`) are `unknown`, even when correct. |

@@ -65,7 +65,10 @@ Every relationship carries `resolution` (`confirmed_static` / `inferred_limited`
 | MCP Python SDK | ✅ `FastMCP` / `MCPServer` + `@server.tool()`; MCP JSON configs (`mcp.json`, `.mcp.json`, `claude_desktop_config.json`) |
 | LangChain / LangGraph (Py) | ✅ `@tool`, `StructuredTool.from_function`, `create_react_agent` |
 | TypeScript / JavaScript | ❌ not implemented in this revision; counted and reported as a coverage gap |
-| `agent.as_tool()`, hosted/library tools, remote MCP servers | ⚠️ reported as `unknown` |
+| Delegation (`handoffs`, `as_tool`) | ✅ ≤2 hops, always `inferred_limited` |
+| Library tools (LangChain shell/REPL/file/requests, OpenAI `ShellTool`) | ✅ modelled from documented behaviour (`inferred_limited`); others `unknown` |
+| Provider-hosted tools, `needs_approval` | ✅ hosted = no host operation; `needs_approval=True` = human-approval guard |
+| Remote MCP servers, dynamic tool lists | ⚠️ reported as `unknown` |
 | IAM / OAuth effective permissions, runtime behaviour | ❌ out of scope by design |
 
 ## Prior art and novelty

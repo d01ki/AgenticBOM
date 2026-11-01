@@ -20,6 +20,7 @@ from agentic_bom.core.evidence import redact, redact_target, sha256_text, snippe
 from agentic_bom.core.models import CONFIRMED, GUARD_ABSENT, GUARD_KNOWN, GUARD_UNKNOWN, INFERRED, UNKNOWN
 from agentic_bom.detectors.python import (
     AGENT_CTORS,
+    HANDOFF_FUNCS,
     FUNCTION_TOOL_WRAPPERS,
     LANGGRAPH_AGENT_CTORS,
     MCP_CLIENT_CTORS,
@@ -94,11 +95,13 @@ class OpHit:
 
 @dataclass
 class ToolRef:
-    kind: str  # function | external | unknown
+    kind: str  # function | library | agent | external | unknown
     fid: str | None
     line: int
     qual: str | None = None
     reason: str = ""
+    agent_ref: dict[str, Any] | None = None
+    approval: str | None = None  # needs_approval: "True" | other expression text | None
 
 
 @dataclass
@@ -128,9 +131,10 @@ class AgentSite:
     instructions_length: int | None
     instructions_line: int
     tools: list[ToolRef]
-    handoff_vars: list[str]
+    handoff_refs: list[dict[str, Any]]
     mcp_refs: list[McpRef]
     returned: bool = False
+    col: int = 0
 
 
 @dataclass
@@ -167,6 +171,76 @@ class AnalysisContext:
         self.index = index
         self.max_depth = max_depth
         self._cache: dict[tuple, FunctionResult] = {}
+        self._class_attrs: dict[tuple[str, str], dict[str, str]] = {}
+        self._sink_reach: dict[tuple[str, str], bool] = {}
+
+    def may_reach_sink(self, mod: ModuleInfo, func, fqual: str, budget: int = 40) -> bool:
+        """Over-approximate: could any recognised sink be reached from ``func`` (ignoring data flow)?"""
+        key = (mod.relpath, fqual)
+        if key in self._sink_reach:
+            return self._sink_reach[key]
+        seen: set[tuple[str, str]] = set()
+        stack = [(mod, func, fqual)]
+        found = False
+        while stack and len(seen) < budget and not found:
+            m, fn, q = stack.pop()
+            if (m.relpath, q) in seen:
+                continue
+            seen.add((m.relpath, q))
+            cls = q.split(".")[0] if q.split(".")[0] in m.classes else None
+            for node in ast.walk(fn):
+                if isinstance(node, ast.Subscript) and self.index.qualname(m, node.value) == "os.environ":
+                    found = True
+                    break
+                if not isinstance(node, ast.Call):
+                    continue
+                f = node.func
+                if isinstance(f, (ast.Call, ast.Subscript)):
+                    found = True  # dynamic dispatch
+                    break
+                cq = self.index.qualname(m, f)
+                if cq and (cq in ops.SINKS or cq in ops.OPEN_FUNCS or cq in ops.GENERIC_REQUEST or cq in ops.CLOUD_FACTORIES
+                           or cq in ("importlib.import_module", "builtins.__import__")):
+                    found = True
+                    break
+                if isinstance(f, ast.Attribute) and f.attr in ops.PATH_METHODS:
+                    found = True
+                    break
+                target = self.index.lookup_function(cq) if cq else None
+                if target is None and isinstance(f, ast.Attribute) and cls and isinstance(f.value, ast.Name) and f.value.id == "self":
+                    mq = f"{cls}.{f.attr}"
+                    target = (m, m.functions[mq], mq) if mq in m.functions else None
+                if target is None and isinstance(f, ast.Attribute):
+                    # unknown receiver: any project method with this name could be the target (over-approximation)
+                    for om in self.index.modules.values():
+                        for oq, ofn in om.functions.items():
+                            if oq.endswith("." + f.attr) and oq.count(".") == 1:
+                                stack.append((om, ofn, oq))
+                if target is not None:
+                    stack.append(target)
+        if stack and not found:
+            found = True  # budget exhausted: stay conservative
+        self._sink_reach[key] = found
+        return found
+
+    def class_attr_type(self, mod: ModuleInfo, cname: str, attr: str) -> str | None:
+        key = (mod.relpath, cname)
+        if key not in self._class_attrs:
+            self._class_attrs[key] = {}
+            types: dict[str, str] = {}
+            for q, fn in sorted(mod.functions.items()):
+                if not q.startswith(cname + ".") or q.count(".") != 1:
+                    continue
+                fa = FunctionAnalyzer(self, mod, fn, q, {}, 0, (), "source")
+                for node in ast.walk(fn):
+                    if isinstance(node, ast.Assign) and len(node.targets) == 1:
+                        t = node.targets[0]
+                        if isinstance(t, ast.Attribute) and isinstance(t.value, ast.Name) and t.value.id == "self":
+                            ty = fa.expr_type(node.value)
+                            if ty:
+                                types.setdefault(t.attr, ty)
+            self._class_attrs[key] = types
+        return self._class_attrs[key].get(attr)
 
     def analyze(
         self,
@@ -227,6 +301,9 @@ class FunctionAnalyzer:
         self.counts: Counter[str] = Counter()
         self.res = FunctionResult()
         self._type_depth = 0
+        head = func_qual.split(".")[0]
+        params = [a.arg for a in func.args.args] if func is not None else []
+        self.self_class = head if (head in mod.classes and params[:1] == ["self"]) else None
 
     # -- driver -------------------------------------------------------------
     def run(self) -> FunctionResult:
@@ -402,6 +479,9 @@ class FunctionAnalyzer:
                 q = self.qual(e.func)
                 if q in ops.PATH_FACTORIES or (q and q.startswith("pathlib.Path.")):
                     return "path"
+                cls = self.index.lookup_class(q)
+                if cls is not None:
+                    return f"class:{cls[0].modname}:{cls[1]}"
                 if q in ops.CLOUD_FACTORIES:
                     svc = const_str(self.mod, _kw(e, "service_name", 0), self.index) or "unknown"
                     return f"boto3:{svc}"
@@ -412,9 +492,19 @@ class FunctionAnalyzer:
                 return "path" if self.expr_type(e.left) == "path" else None
             if isinstance(e, ast.Attribute) and e.attr == "parent":
                 return self.expr_type(e.value)
+            if isinstance(e, ast.Attribute):
+                owner = self.expr_type(e.value)
+                if owner and owner.startswith("class:"):
+                    _, modname, cname = owner.split(":", 2)
+                    m = self.index.modules.get(modname)
+                    if m is not None:
+                        return self.ctx.class_attr_type(m, cname, e.attr)
+                return None
             if isinstance(e, ast.Name):
                 if e.id in self.local_types:
                     return self.local_types[e.id]
+                if e.id == "self" and self.self_class is not None:
+                    return f"class:{self.mod.modname}:{self.self_class}"
                 if e.id not in self.local_assigns and e.id in self.mod.module_assigns:
                     return self.expr_type(self.mod.module_assigns[e.id])
             return None
@@ -585,6 +675,13 @@ class FunctionAnalyzer:
                 cat = ops.PATH_METHODS[f.attr]
                 self.record_op(call, cat, f"pathlib.Path.{f.attr}", env, target_exprs=[f.value], content_exprs=list(call.args))
                 return
+            if rtype and rtype.startswith("class:"):
+                _, modname, cname = rtype.split(":", 2)
+                m = self.index.modules.get(modname)
+                meth = f"{cname}.{f.attr}"
+                if m is not None and meth in m.functions:
+                    self.follow_helper(call, env, (m, m.functions[meth], meth))
+                return
             if rtype and rtype.startswith("boto3:"):
                 svc = rtype.split(":", 1)[1]
                 if (svc, f.attr) in (("secretsmanager", "get_secret_value"), ("ssm", "get_parameter"), ("ssm", "get_parameters")):
@@ -723,8 +820,9 @@ class FunctionAnalyzer:
         if fid in self.stack:
             return  # recursion: already being analysed on this chain
         if self.depth + 1 > self.ctx.max_depth:
-            self.record_op(call, ops.DYNAMIC_DISPATCH, f"depth-limit:{tq}", env, resolution=UNKNOWN,
-                           attrs={"reason": f"helper chain exceeds {self.ctx.max_depth} hops"})
+            if self.ctx.may_reach_sink(tmod, tfunc, tq):
+                self.record_op(call, ops.DYNAMIC_DISPATCH, f"depth-limit:{tq}", env, resolution=UNKNOWN,
+                               attrs={"reason": f"helper chain exceeds {self.ctx.max_depth} hops and a recognised sink is syntactically reachable beyond it"})
             return
         init_env = {p: t for p, t in arg_taints.items() if t is not None}
         sub = self.ctx.analyze(tmod, tfunc, tq, init_env, self.depth + 1, self.stack + (fid,), "tool")
@@ -775,9 +873,10 @@ class FunctionAnalyzer:
             instructions_length=length,
             instructions_line=instr_e.lineno if instr_e is not None else call.lineno,
             tools=self.resolve_tools(tools_e, self.mod, 0) if tools_e is not None else [],
-            handoff_vars=[e.id for e in getattr(handoffs_e, "elts", []) if isinstance(e, ast.Name)],
+            handoff_refs=self.resolve_handoffs(handoffs_e),
             mcp_refs=self.resolve_mcp(mcp_e) if mcp_e is not None else [],
             returned=is_return,
+            col=call.col_offset,
         )
         if assign_name:
             self.agent_vars[assign_name] = site
@@ -797,6 +896,28 @@ class FunctionAnalyzer:
             return out
         if isinstance(expr, ast.BinOp) and isinstance(expr.op, ast.Add):
             return self.resolve_tools(expr.left, mod, depth + 1) + self.resolve_tools(expr.right, mod, depth + 1)
+        if isinstance(expr, ast.Call) and isinstance(expr.func, ast.Attribute) and expr.func.attr == "get_tools":
+            kit = expr.func.value
+            if isinstance(kit, ast.Name) and mod is self.mod and kit.id in self.local_assigns:
+                kit = self.local_assigns[kit.id]
+            elif isinstance(kit, ast.Name) and kit.id in mod.module_assigns:
+                kit = mod.module_assigns[kit.id]
+            if isinstance(kit, ast.Call):
+                kq = self.index.qualname(mod, kit.func)
+                table = ops.LIBRARY_TOOLKITS.get(kq or "")
+                if table is not None:
+                    selected = None
+                    sel = _kw(kit, "selected_tools")
+                    if isinstance(sel, (ast.List, ast.Tuple)):
+                        selected = {const_str(mod, x, self.index) for x in sel.elts}
+                    out = []
+                    for tname, lib in sorted(table.items()):
+                        if not lib or (selected is not None and tname not in selected):
+                            continue
+                        out.append(ToolRef("library", None, line, lib, reason=f"{kq.rsplit('.', 1)[-1]}.get_tools() -> {tname}"))
+                    if selected is None and _kw(kit, "selected_tools") is not None:
+                        out.append(ToolRef("unknown", None, line, reason="toolkit selected_tools not statically resolvable"))
+                    return out
         if isinstance(expr, ast.Name):
             if mod is self.mod and expr.id in self.local_assigns:
                 return self.resolve_tools(self.local_assigns[expr.id], mod, depth + 1)
@@ -825,6 +946,10 @@ class FunctionAnalyzer:
             found = self.index.lookup_module_var(q)
             if found and isinstance(found[1], ast.Call) and depth < 4:
                 return self.resolve_one_tool(found[1], found[0], depth + 1)
+            if q in ops.HOSTED_TOOLS:
+                return [ToolRef("hosted", None, line, q, reason="provider-hosted tool; no operation on the application host")]
+            if q in ops.LIBRARY_TOOLS:
+                return [ToolRef("library", None, line, q, reason="documented library tool behaviour (source not analysed)")]
             if q and not q.startswith("builtins."):
                 return [ToolRef("external", None, line, q, reason="tool object defined outside the scanned project")]
             return [ToolRef("unknown", None, line, reason=f"unresolved tool reference {redact(ast.unparse(el))[:60]}")]
@@ -833,10 +958,87 @@ class FunctionAnalyzer:
             if q in FUNCTION_TOOL_WRAPPERS and el.args:
                 return self.resolve_one_tool(el.args[0], mod, depth + 1)
             if isinstance(el.func, ast.Attribute) and el.func.attr == "as_tool":
-                return [ToolRef("unknown", None, line, reason="agent.as_tool() delegation is not followed in v1")]
+                ref = self.agent_ref(el.func.value, mod) if mod is self.mod else None
+                if ref is not None:
+                    tname = const_str(mod, _kw(el, "tool_name", 0), self.index)
+                    return [ToolRef("agent", None, line, tname, reason="agent.as_tool() delegation", agent_ref=ref)]
+                return [ToolRef("unknown", None, line, reason="agent.as_tool() on an unresolvable agent expression")]
+            if q in ops.HOSTED_TOOLS:
+                return [ToolRef("hosted", None, line, q, reason="provider-hosted tool; no operation on the application host")]
+            if q in ops.LIBRARY_TOOLS:
+                if q.startswith("agents.") and q.endswith(".ShellTool"):
+                    env_type = self._shell_environment(el, mod)
+                    if env_type in ops.HOSTED_SHELL_ENVIRONMENTS:
+                        return [ToolRef("hosted", None, line, q, reason=f"ShellTool runs in a provider-hosted container ({env_type})")]
+                    if env_type == "?":
+                        return [ToolRef("unknown", None, line, q, reason="ShellTool environment not statically resolvable (local vs hosted container)")]
+                appr = _kw(el, "needs_approval")
+                approval = None if appr is None else (str(appr.value) if isinstance(appr, ast.Constant) else "dynamic")
+                return [ToolRef("library", None, line, q, reason="documented library tool behaviour (source not analysed)", approval=approval)]
             if q and not q.startswith(mod.modname + "."):
                 return [ToolRef("external", None, line, q, reason="library tool instance; operations not analysed")]
         return [ToolRef("unknown", None, line, reason=f"unsupported tool expression {redact(ast.unparse(el))[:60]}")]
+
+    def _shell_environment(self, call: ast.Call, mod: ModuleInfo) -> str | None:
+        """None = local (default), a type string when literal, "?" when unresolvable."""
+        env = _kw(call, "environment")
+        if env is None or (isinstance(env, ast.Constant) and env.value is None):
+            return None
+        if isinstance(env, ast.Name):
+            env = (self.local_assigns.get(env.id) if mod is self.mod else None) or mod.module_assigns.get(env.id)
+        if isinstance(env, ast.Dict):
+            for k, v in zip(env.keys, env.values):
+                if k is not None and const_str(mod, k, self.index) == "type":
+                    t = const_str(mod, v, self.index)
+                    return t if t else "?"
+        return "?"
+
+    def agent_ref(self, e: ast.expr, mod: ModuleInfo, depth: int = 0) -> dict[str, Any] | None:
+        """Describe where the agent referenced by ``e`` is defined; resolved to a site by the scanner."""
+        if depth > 4:
+            return None
+        line = getattr(e, "lineno", 0)
+        if isinstance(e, ast.Call):
+            q = self.index.qualname(mod, e.func)
+            if q in HANDOFF_FUNCS:
+                inner = _kw(e, "agent", 0)
+                return self.agent_ref(inner, mod, depth + 1) if inner is not None else None
+            if q in AGENT_CTORS or q in LANGGRAPH_AGENT_CTORS:
+                return {"inline": True, "file": mod.relpath, "line": e.lineno, "col": e.col_offset, "ref_line": line}
+            target = self.index.lookup_function(q)
+            if target is not None:
+                return {"factory": f"{target[0].relpath}:{target[2]}", "ref_line": line}
+            return None
+        if isinstance(e, ast.Name):
+            if mod is self.mod and e.id in self.agent_vars:
+                return {"file": mod.relpath, "func": self.func_qual, "var": e.id, "ref_line": line}
+            if mod is self.mod and e.id in self.local_assigns:
+                v = self.local_assigns[e.id]
+                return self.agent_ref(v.value if isinstance(v, ast.Await) else v, mod, depth + 1)
+            if e.id in mod.module_assigns:
+                return {"file": mod.relpath, "func": "<module>", "var": e.id, "ref_line": line}
+        if isinstance(e, (ast.Name, ast.Attribute)):
+            q = self.index.qualname(mod, e)
+            if q and "." in q:
+                modpart, var = q.rsplit(".", 1)
+                m = self.index.resolve_module(modpart)
+                if m is not None and var in m.module_assigns:
+                    return {"file": m.relpath, "func": "<module>", "var": var, "ref_line": line}
+        return None
+
+    def resolve_handoffs(self, expr: ast.expr | None) -> list[dict[str, Any]]:
+        if expr is None:
+            return []
+        if isinstance(expr, ast.Name) and expr.id in self.local_assigns:
+            expr = self.local_assigns[expr.id]
+        elts = expr.elts if isinstance(expr, (ast.List, ast.Tuple)) else None
+        if elts is None:
+            return [{"unresolved": True, "ref_line": expr.lineno, "reason": "dynamic handoffs list"}]
+        out = []
+        for el in elts:
+            ref = self.agent_ref(el, self.mod)
+            out.append(ref if ref is not None else {"unresolved": True, "ref_line": el.lineno, "reason": f"unresolved handoff {redact(ast.unparse(el))[:60]}"})
+        return out
 
     def resolve_mcp(self, expr: ast.expr) -> list[McpRef]:
         elts = expr.elts if isinstance(expr, (ast.List, ast.Tuple)) else [expr]

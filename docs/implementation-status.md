@@ -79,12 +79,42 @@ agentic-bom scan https://github.com/modelcontextprotocol/python-sdk --ref d7845c
 2. The HTML embedded scan timings, which made it non-reproducible. Timings are now stripped, and artefacts are written with LF newlines.
 3. Git revision validation rejected `HEAD~1`. `~` and `^` are now allowed; a leading `-` and `..` are still rejected.
 
+## P1 increment 1 (branch `feat/p1-delegation-ci`)
+
+| Item | Status |
+|---|---|
+| GitHub Actions CI (Ubuntu and Windows × Python 3.10/3.12): tests, demo, benchmark, documented gate exit codes | ✅ added. Linux runs the symlink test that is skipped locally. |
+| Delegation paths: `handoffs`, `handoff()`, `agent.as_tool()` (≤2 hops, `inferred_limited`) | ✅ |
+| Library tool behaviour model (LangChain shell/REPL/file/requests tools, `FileManagementToolkit.get_tools()`, OpenAI `ShellTool`/`LocalShellTool`) | ✅ |
+| Provider-hosted tools and hosted-container `ShellTool` recorded with no host operation | ✅ |
+| `needs_approval` modelled as a human-approval guard | ✅ |
+| Receiver typing for project classes and `self.attr` | ✅ |
+| Depth-limit `unknown` only when a sink is syntactically reachable | ✅ |
+
+Tests: **74 passed, 1 skipped**. Bundled benchmark (16 scan and 5 drift cases): agents 18/0/0, tools 27/0/0, bindings 26/0/0, **paths 21 TP / 0 FP / 1 FN**, drift 8/0/0 (TP/FP/FN). The same caveats as above apply.
+
+### External re-scan after increment 1 (same pinned SHAs)
+
+| Repo | Before | After |
+|---|---|---|
+| openai-agents-python | 1 bound_capability, **53 unknown** | 1 bound_capability, 4 operation_path (local `ShellTool`, all with `needs_approval` → guard `known`, severity low), **29 unknown** |
+| python-sdk | 6 unknown (depth limit) | 4 unknown (depth limit with a syntactically reachable sink) |
+
+The remaining oa unknowns are 11 library tool instances that are not modelled, 10 MCP servers outside the repo, 5 dynamic tool lists or namespaces, 2 `as_tool()` calls on unresolvable agents, and 1 unresolved reference.
+
+### Defects found and fixed in increment 1 (from the external spot check)
+
+4. **False positives on hosted-container shells.** The first version of the library model mapped every `agents.ShellTool` to host `process_execution`. 4 of 8 new oa paths were `ShellTool(environment={"type": "container_auto"|"container_reference"})`, which runs in a provider-hosted container. AEM now reads `environment`, and a non-literal value gives `unknown`.
+5. **Evidence aliasing.** Nodes and edges shared one evidence list object, so merging evidence into a shared operation node leaked other agents' file:line evidence into the first agent's path. `Node` and `Edge` now copy their evidence on construction (regression test `test_evidence_lists_are_not_aliased_between_graph_elements`).
+6. **Missing `needs_approval` guard.** The SDK's human-in-the-loop flag was ignored, which overstated severity for all 4 local shell agents. It is now modelled as a guard.
+7. **Depth-limit noise.** After receiver typing, depth-limit unknowns on python-sdk rose from 6 to 22. Reachability pre-filtering brought them down to 4.
+
 ## Not done / next steps
 
 - TypeScript detector (Vercel AI SDK, OpenAI Agents TS). Not started.
 - CycloneDX export and AgentBOM v1 interoperability. Not started, and conformance is not claimed.
-- Paths through `handoffs` / `as_tool` delegation.
-- Type inference for method receivers beyond `pathlib.Path` and `boto3` (this is the main silent false-negative class).
+- Receiver typing for parameters, factories and containers (still a silent false-negative class).
+- Extending the library tool model (ComputerTool, LangChain toolkits beyond file management) and per-version SDK regression fixtures.
 - An external corpus of 20 or more independently annotated repos (P1). Pairs of revisions taken from real commit history, to test drift on non-synthetic changes.
 - A fair comparison against Cisco AI BOM and other scanners on scoped tasks (P1).
 - Agent identity enrichment from IaC (P2, optional).

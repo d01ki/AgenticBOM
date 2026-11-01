@@ -117,6 +117,8 @@ class Node:
     resolution: str = CONFIRMED
 
     def __post_init__(self) -> None:
+        self.evidence = list(self.evidence)  # never alias a caller's list (merges would leak across nodes/edges)
+        self.attributes = dict(self.attributes)
         if self.kind not in NODE_KINDS:
             raise ValueError(f"unknown node kind {self.kind!r}")
         if self.resolution not in RESOLUTIONS:
@@ -146,6 +148,8 @@ class Edge:
     key: str = ""  # disambiguates parallel edges (e.g. different helper chains)
 
     def __post_init__(self) -> None:
+        self.evidence = list(self.evidence)
+        self.attributes = dict(self.attributes)
         if self.type not in EDGE_KINDS:
             raise ValueError(f"unknown edge type {self.type!r}")
         if self.resolution not in RESOLUTIONS:

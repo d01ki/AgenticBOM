@@ -79,3 +79,45 @@ def match_function(qual: str | None) -> str | None:
     if not qual:
         return None
     return SINKS.get(qual)
+
+
+# Library / built-in tools whose *documented* behaviour is a sensitive operation on model-supplied
+# arguments. Their source is not analysed: edges built from this table are `inferred_limited`
+# with scope `library_behaviour_model`.
+LIBRARY_TOOLS: dict[str, str] = {}
+for _p in ("langchain_community.tools", "langchain_community.tools.shell", "langchain_community.tools.shell.tool", "langchain.tools"):
+    LIBRARY_TOOLS[f"{_p}.ShellTool"] = PROCESS_EXECUTION
+for _p in ("langchain_experimental.tools", "langchain_experimental.tools.python.tool"):
+    LIBRARY_TOOLS[f"{_p}.PythonREPLTool"] = CODE_EXECUTION
+    LIBRARY_TOOLS[f"{_p}.PythonAstREPLTool"] = CODE_EXECUTION
+for _p in ("langchain_community.tools", "langchain_community.tools.file_management"):
+    LIBRARY_TOOLS[f"{_p}.WriteFileTool"] = FILESYSTEM_WRITE
+    LIBRARY_TOOLS[f"{_p}.CopyFileTool"] = FILESYSTEM_WRITE
+    LIBRARY_TOOLS[f"{_p}.MoveFileTool"] = FILESYSTEM_WRITE
+    LIBRARY_TOOLS[f"{_p}.DeleteFileTool"] = FILESYSTEM_DELETE
+for _p in ("langchain_community.tools", "langchain_community.tools.requests.tool"):
+    for _v in ("Post", "Put", "Patch", "Delete"):
+        LIBRARY_TOOLS[f"{_p}.Requests{_v}Tool"] = NETWORK_STATE_CHANGE
+for _p in ("agents", "agents.tool"):
+    LIBRARY_TOOLS[f"{_p}.LocalShellTool"] = PROCESS_EXECUTION
+    LIBRARY_TOOLS[f"{_p}.ShellTool"] = PROCESS_EXECUTION
+
+# Provider-hosted tools: executed by the model provider, not on the application host.
+HOSTED_TOOLS = {f"agents.{n}" for n in ("WebSearchTool", "FileSearchTool", "CodeInterpreterTool", "ImageGenerationTool")}
+HOSTED_TOOLS |= {f"agents.tool.{n}" for n in ("WebSearchTool", "FileSearchTool", "CodeInterpreterTool", "ImageGenerationTool")}
+# ShellTool(environment={"type": ...}) values that run in a provider-hosted container
+HOSTED_SHELL_ENVIRONMENTS = {"container_auto", "container_reference"}
+
+# Toolkits expanded via `.get_tools()`: toolkit -> {tool name: library tool qual}
+LIBRARY_TOOLKITS: dict[str, dict[str, str]] = {}
+_FM = {
+    "write_file": "langchain_community.tools.WriteFileTool",
+    "copy_file": "langchain_community.tools.CopyFileTool",
+    "move_file": "langchain_community.tools.MoveFileTool",
+    "file_delete": "langchain_community.tools.DeleteFileTool",
+    "read_file": "",
+    "list_directory": "",
+    "file_search": "",
+}
+for _p in ("langchain_community.agent_toolkits", "langchain_community.agent_toolkits.file_management.toolkit", "langchain.agents.agent_toolkits"):
+    LIBRARY_TOOLKITS[f"{_p}.FileManagementToolkit"] = _FM

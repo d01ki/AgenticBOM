@@ -1,0 +1,36 @@
+{
+  "case": "library-tools",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "devops"
+  ],
+  "tools": [
+    "ShellTool",
+    "WriteFileTool"
+  ],
+  "bindings": [
+    [
+      "devops",
+      "ShellTool"
+    ],
+    [
+      "devops",
+      "WriteFileTool"
+    ]
+  ],
+  "paths": [
+    [
+      "devops",
+      "ShellTool",
+      "process_execution",
+      "operation_path"
+    ],
+    [
+      "devops",
+      "WriteFileTool",
+      "filesystem_write",
+      "operation_path"
+    ]
+  ],
+  "notes": "Library tools modelled from documented behaviour; selected_tools filters FileManagementToolkit to read_file (not sensitive) and write_file."
+}
