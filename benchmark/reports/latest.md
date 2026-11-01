@@ -5,14 +5,14 @@
 
 | Category | TP | FP | FN | Precision | Recall | F1 |
 |---|---|---|---|---|---|---|
-| agents | 13 | 0 | 0 | 1.00 | 1.00 | 1.00 |
-| tools | 21 | 0 | 0 | 1.00 | 1.00 | 1.00 |
-| bindings | 20 | 0 | 0 | 1.00 | 1.00 | 1.00 |
-| paths | 13 | 0 | 1 | 1.00 | 0.93 | 0.96 |
+| agents | 18 | 0 | 0 | 1.00 | 1.00 | 1.00 |
+| tools | 27 | 0 | 0 | 1.00 | 1.00 | 1.00 |
+| bindings | 26 | 0 | 0 | 1.00 | 1.00 | 1.00 |
+| paths | 21 | 0 | 1 | 1.00 | 0.95 | 0.98 |
 | drift_findings | 8 | 0 | 0 | 1.00 | 1.00 | 1.00 |
 
 Expected-unknown constructs reported as `unknown`: 4 / 4
-Median case duration: 0.0204 s · max traced peak memory: 1087748 bytes
+Median case duration: 0.0149 s · max traced peak memory: 1090437 bytes
 
 ## Cases
 
@@ -31,6 +31,9 @@ Median case duration: 0.0204 s · max traced peak memory: 1087748 bytes
 | neg-test-fixture-excluded | scan | negative | yes | — |
 | neg-dynamic-dispatch | scan | unknown control | yes | — |
 | neg-unsupported-guard | scan | unknown control | yes | — |
+| delegation | scan | positive (delegation) | yes | — |
+| library-tools | scan | positive (library model) | yes | — |
+| class-receiver | scan | positive (method receivers) | yes | — |
 | drift-same-bom-1 | drift | drift | yes | BOM delta unchanged (expected unchanged) |
 | drift-same-bom-2 | drift | drift | yes | BOM delta unchanged (expected unchanged) |
 | drift-mcp-1 | drift | drift | yes | BOM delta changed (expected changed) |

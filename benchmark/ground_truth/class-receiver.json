@@ -1,0 +1,36 @@
+{
+  "case": "class-receiver",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "cleaner"
+  ],
+  "tools": [
+    "remove_export",
+    "purge_dir"
+  ],
+  "bindings": [
+    [
+      "cleaner",
+      "remove_export"
+    ],
+    [
+      "cleaner",
+      "purge_dir"
+    ]
+  ],
+  "paths": [
+    [
+      "cleaner",
+      "remove_export",
+      "cloud_sdk_call",
+      "operation_path"
+    ],
+    [
+      "cleaner",
+      "purge_dir",
+      "filesystem_delete",
+      "operation_path"
+    ]
+  ],
+  "notes": "Sinks behind project class methods: Storage().delete -> self.s3.delete_object; s.purge -> self._wipe -> shutil.rmtree."
+}

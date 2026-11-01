@@ -45,3 +45,15 @@ def test_redact_known_token_shapes(secret):
 def test_redact_assignment_and_url_parts():
     assert redact('password="hunter22"') == f'password="{REDACTED}"'
     assert redact_target("https://user:pw@example.com/path?key=abc") == "https://example.com/path"
+
+
+def test_evidence_lists_are_not_aliased_between_graph_elements():
+    from agentic_bom.core.models import Evidence
+    g = EvidenceGraph()
+    shared = [Evidence("a.py", 1, 1, "x")]
+    g.add_node(Node("agent:a", "agent", "a"))
+    g.add_node(Node("operation:o", "operation", "o", shared))
+    e = g.add_edge(Edge("agent:a", "operation:o", "REACHES_OPERATION", shared))
+    g.add_node(Node("operation:o", "operation", "o", [Evidence("b.py", 2, 2, "x")]))  # merge into existing node
+    assert [ev.file for ev in e.evidence] == ["a.py"]
+    assert len(shared) == 1

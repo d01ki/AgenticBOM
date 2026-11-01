@@ -212,6 +212,7 @@ class Scanner:
                 {"framework": t.framework, "file": t.module.relpath, "function": t.func_qual, "parameters": t.params, "contract": t.contract},
                 resolution=res,
             ))
+            approval = approval_guard(t.contract["annotations"].get("needs_approval"))
             init_env = {p: Taint(frozenset({f"param:{p}"})) for p in t.params}
             r = self.ctx.analyze(t.module, t.func, t.func_qual, init_env, 0, (t.fid,), "tool")
             for o in r.ops:
@@ -225,6 +226,9 @@ class Scanner:
                 via = [{"file": f, "line": ln, "caller": c, "callee": ce} for f, ln, c, ce in o.via]
                 ev = [self._ev(f, ln, "py.helper-call") for f, ln, _c, _ce in o.via] + [self._ev(o.file, o.line, f"py.sensitive-op.{o.category}", o.end_line)]
                 params = sorted({x.split(":", 1)[1] for x in o.origins if x.startswith("param:")})
+                guard, guard_kind = o.guard, ("code" if o.guard != "absent" else None)
+                if approval and params:
+                    guard, guard_kind = combine_guard(guard, guard_kind, approval)
                 content_params = sorted({x.split(":", 1)[1] for x in o.content_origins if x.startswith("param:")})
                 g.add_edge(Edge(
                     t.id, o.op_id, "REACHES_OPERATION", ev, resolution=o.resolution,
@@ -236,7 +240,8 @@ class Scanner:
                         "content_controlled": bool(content_params),
                         "controlling_params": params,
                         "content_params": content_params,
-                        "guard_status": o.guard if (o.target_controlled and params) else "not_applicable",
+                        "guard_status": guard if (o.target_controlled and params) else "not_applicable",
+                        "guard_kind": guard_kind if (o.target_controlled and params) else None,
                         "target": o.target,
                         "target_kind": o.target_kind,
                         "via": via,
@@ -286,6 +291,7 @@ class Scanner:
         g = self.graph
         used: set[str] = set()
         site_ids: dict[int, str] = {}
+        pending_delegations: list = []
         for site in sorted(sites, key=lambda s: (s.file, s.line)):
             aid = self._agent_id(site, used)
             site_ids[id(site)] = aid
@@ -333,6 +339,16 @@ class Scanner:
                         continue
                     g.add_edge(Edge(aid, tid, "BINDS_TOOL", [self._ev(site.file, ref.line, "py.agent-tool-binding")],
                                     resolution=CONFIRMED if tools[tid].framework != "undecorated-function" else INFERRED))
+                elif ref.kind == "library":
+                    self._add_library_tool(aid, site, ref)
+                elif ref.kind == "hosted":
+                    short = ref.qual.rsplit(".", 1)[-1]
+                    tid = f"tool:hosted:{aid}:{short}@{ref.line}"
+                    ev = [self._ev(site.file, ref.line, "py.agent-tool-binding", note=ref.reason)]
+                    g.add_node(Node(tid, "tool", short, ev, {"framework": "provider-hosted", "library": ref.qual, "reason": ref.reason}))
+                    g.add_edge(Edge(aid, tid, "BINDS_TOOL", ev))
+                elif ref.kind == "agent":
+                    pending_delegations.append((aid, site, ref.agent_ref, "as_tool", ref.line, ref.qual))
                 else:
                     n_unknown += 1
                     tid = f"tool:{ref.kind}:{site.file}:{ref.qual or aid}#{n_unknown}"
@@ -356,12 +372,28 @@ class Scanner:
                                     {"source": "external", "transport": ref.transport, "reason": reason}, resolution=UNKNOWN))
                     g.add_edge(Edge(aid, sid, "CONNECTS_MCP", ev, resolution=UNKNOWN, attributes={"transport": ref.transport}))
                     self.unknowns.append({"kind": "mcp_server", "file": site.file, "line": ref.line, "reason": reason, "agent": aid})
-        # handoffs
+        # delegation: handoffs and agent.as_tool()
         for site in sites:
-            for var in site.handoff_vars:
-                for other in sites:
-                    if other.var == var and other.file == site.file and other is not site:
-                        g.add_edge(Edge(site_ids[id(site)], site_ids[id(other)], "DELEGATES_TO", [self._ev(site.file, site.line, "py.agent-handoff")]))
+            for ref in site.handoff_refs:
+                pending_delegations.append((site_ids[id(site)], site, ref, "handoff", ref.get("ref_line", site.line), None))
+        for aid, site, ref, mode, line, tool_name in pending_delegations:
+            targets = [] if ref is None or ref.get("unresolved") else self._resolve_agent_ref(ref, sites)
+            targets = [t for t in targets if site_ids[id(t)] != aid]
+            if not targets:
+                reason = (ref or {}).get("reason") or f"{mode} target agent not statically resolvable"
+                self.unknowns.append({"kind": "delegation", "file": site.file, "line": line, "reason": reason, "agent": aid})
+                if mode == "as_tool":
+                    tid = f"tool:unknown:{site.file}:{aid}#as_tool@{line}"
+                    g.add_node(Node(tid, "tool", "unresolved agent.as_tool()", [self._ev(site.file, line, "py.agent-tool-binding")],
+                                    {"framework": "unknown", "reason": reason}, resolution=UNKNOWN))
+                    g.add_edge(Edge(aid, tid, "BINDS_TOOL", [self._ev(site.file, line, "py.agent-tool-binding", note=reason)], resolution=UNKNOWN, confidence=0.0))
+                continue
+            for t in targets:
+                attrs = {"mode": mode}
+                if tool_name:
+                    attrs["tool_name"] = tool_name
+                g.add_edge(Edge(aid, site_ids[id(t)], "DELEGATES_TO", [self._ev(site.file, line, f"py.agent-{mode.replace('_', '-')}")],
+                                attributes=attrs, scope=f"delegation:{mode}"))
         # user-role inputs via Runner.run*
         for r in runners:
             targets = []
@@ -381,6 +413,32 @@ class Scanner:
                     g.add_edge(Edge(did, aid, "FLOWS_TO", [self._ev(r.file, line, f"py.untrusted-source.{kind}"), self._ev(r.file, r.line, "py.runner-input")],
                                     attributes={"role": "user_message"}))
                     g.nodes[aid].attributes["user_input_untrusted"] = True
+
+    def _resolve_agent_ref(self, ref: dict, sites: list[AgentSite]) -> list[AgentSite]:
+        if ref.get("inline"):
+            return [s for s in sites if s.file == ref["file"] and s.line == ref["line"] and s.col == ref["col"]]
+        if ref.get("factory"):
+            return [s for s in sites if f"{s.file}:{s.func_qual}" == ref["factory"] and s.returned]
+        return [s for s in sites if s.file == ref.get("file") and s.var == ref.get("var") and s.func_qual == ref.get("func")]
+
+    def _add_library_tool(self, aid: str, site: AgentSite, ref) -> None:
+        """Library tool modelled from documented behaviour; its implementation is not analysed."""
+        g = self.graph
+        cat = ops.LIBRARY_TOOLS[ref.qual]
+        guard, guard_kind = combine_guard("absent", None, approval_guard(ref.approval)) if ref.approval else ("absent", None)
+        short = ref.qual.rsplit(".", 1)[-1]
+        tid = f"tool:library:{aid}:{short}"
+        ev = [self._ev(site.file, ref.line, "py.agent-tool-binding", note=ref.reason)]
+        g.add_node(Node(tid, "tool", short, ev, {"framework": "library-model", "library": ref.qual, "reason": ref.reason,
+                                                "parameters": ["<model-supplied>"]}, resolution=INFERRED))
+        g.add_edge(Edge(aid, tid, "BINDS_TOOL", ev))
+        oid = f"operation:library:{ref.qual}"
+        g.add_node(Node(oid, "operation", ref.qual, ev, {"category": cat, "callee": ref.qual, "file": site.file, "function": "<library>"},
+                        resolution=INFERRED))
+        g.add_edge(Edge(tid, oid, "REACHES_OPERATION", ev, resolution=INFERRED, scope="library_behaviour_model", confidence=0.7,
+                        attributes={"operation_category": cat, "target_controlled": True, "content_controlled": True,
+                                    "controlling_params": ["<model-supplied>"], "content_params": [], "guard_status": guard, "guard_kind": guard_kind,
+                                    "target": "symbolic:<model-supplied>", "target_kind": "symbolic", "via": []}))
 
     def _provenance(self, site: AgentSite, call_sites) -> tuple[str, list, list]:
         """Return (provenance, [((kind, file, line), extra_evidence)], evidence)."""
@@ -427,6 +485,22 @@ class Scanner:
                 attrs["source_server_candidates"] = self._resolve_server_file(c.file, c.server_file)
             g.add_node(Node(sid, "mcp_server", c.name, [Evidence(c.file, c.line, c.line, "config.mcp-server")], attrs,
                             resolution=INFERRED if attrs.get("source_server_candidates") else UNKNOWN))
+
+
+def approval_guard(value: str | None) -> str | None:
+    """OpenAI Agents SDK ``needs_approval``: literal True -> known human-approval guard; non-literal -> unknown."""
+    if value is None or value == "False":
+        return None
+    return "known" if value == "True" else "unknown"
+
+
+def combine_guard(guard: str, kind: str | None, approval: str | None) -> tuple[str, str | None]:
+    if approval is None:
+        return guard, kind
+    rank = {"absent": 0, "unknown": 1, "known": 2}
+    if rank[approval] > rank[guard]:
+        return approval, "human_approval"
+    return guard, kind
 
 
 def summarize(g: EvidenceGraph, paths: list[dict[str, Any]]) -> dict[str, Any]:

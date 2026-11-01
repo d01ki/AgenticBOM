@@ -79,3 +79,15 @@ def test_content_only_param_does_not_control_target(make_project):
 def test_secret_env_names_recorded_without_values(make_project):
     p = _single_path(make_project, "    return os.environ['API_TOKEN'] + p\n")
     assert p["operation_category"] == "secret_access" and p["operation_target"] == "API_TOKEN"
+
+
+@pytest.mark.parametrize("decorator,guard,kind,cls", [
+    ("@function_tool(needs_approval=True)", "known", "human_approval", "operation_path"),
+    ("@function_tool(needs_approval=check_policy)", "unknown", "human_approval", "unknown"),
+    ("@function_tool(needs_approval=False)", "absent", None, "potentially_exposed"),
+])
+def test_needs_approval_is_modelled_as_guard(make_project, decorator, guard, kind, cls):
+    src = TOOL_HDR + "import sys\ndef check_policy(*a):\n    return True\n" + decorator + "\ndef t(p: str) -> str:\n    os.remove(p)\n    return 'x'\n" \
+        "def main():\n    Agent(name='a', instructions='hi ' + sys.stdin.read(), tools=[t])\n"
+    p = scan(make_project({"app.py": src}))["paths"][0]
+    assert (p["guard_status"], p["guard_kind"], p["classification"]) == (guard, kind, cls)

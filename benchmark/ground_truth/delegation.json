@@ -1,0 +1,50 @@
+{
+  "case": "delegation",
+  "annotator": "tool author (not independent)",
+  "agents": [
+    "ops",
+    "writer",
+    "triage"
+  ],
+  "tools": [
+    "restart",
+    "save"
+  ],
+  "bindings": [
+    [
+      "ops",
+      "restart"
+    ],
+    [
+      "writer",
+      "save"
+    ]
+  ],
+  "paths": [
+    [
+      "triage",
+      "save",
+      "filesystem_write",
+      "potentially_exposed"
+    ],
+    [
+      "triage",
+      "restart",
+      "process_execution",
+      "potentially_exposed"
+    ],
+    [
+      "writer",
+      "save",
+      "filesystem_write",
+      "operation_path"
+    ],
+    [
+      "ops",
+      "restart",
+      "process_execution",
+      "operation_path"
+    ]
+  ],
+  "notes": "triage has untrusted instructions; reaches ops via handoff(ops_agent) (cross-file) and writer via writer.as_tool(). Delegated paths are inferred_limited."
+}

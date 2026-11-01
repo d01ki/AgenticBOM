@@ -98,6 +98,27 @@
       "ground_truth": "benchmark/ground_truth/neg-unsupported-guard.json"
     },
     {
+      "id": "delegation",
+      "type": "scan",
+      "path": "benchmark/cases/delegation",
+      "label": "positive (delegation)",
+      "ground_truth": "benchmark/ground_truth/delegation.json"
+    },
+    {
+      "id": "library-tools",
+      "type": "scan",
+      "path": "benchmark/cases/library-tools",
+      "label": "positive (library model)",
+      "ground_truth": "benchmark/ground_truth/library-tools.json"
+    },
+    {
+      "id": "class-receiver",
+      "type": "scan",
+      "path": "benchmark/cases/class-receiver",
+      "label": "positive (method receivers)",
+      "ground_truth": "benchmark/ground_truth/class-receiver.json"
+    },
+    {
       "id": "drift-same-bom-1",
       "type": "drift",
       "base": "examples/same-bom-new-exposure/baseline",

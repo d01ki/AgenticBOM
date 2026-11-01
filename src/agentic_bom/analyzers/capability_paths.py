@@ -41,6 +41,7 @@ REMEDIATION = {
     "secret_access": "Avoid exposing secret lookups to tool parameters; fix the variable name and never return secret values to the model.",
     DYNAMIC_DISPATCH: "Replace dynamic dispatch with an explicit mapping so the reachable operations can be reviewed.",
 }
+MAX_DELEGATION = 2
 SEVERITY = {POTENTIALLY_EXPOSED: "high", OPERATION_PATH: "medium", BOUND_CAPABILITY: "low", INVENTORY_ONLY: "info", PATH_UNKNOWN: "info"}
 
 
@@ -84,7 +85,10 @@ def _reason(cls: str, a: dict[str, Any], untrusted: bool, entry_kind: str) -> st
                 f"could choose that argument. Static possibility only; not proof of exploitation.")
     if cls == OPERATION_PATH:
         g = a.get("guard_status")
-        suffix = " A recognised allowlist/validation guard constrains the parameter." if g == GUARD_KNOWN else ""
+        suffix = ""
+        if g == GUARD_KNOWN:
+            suffix = (" The tool requires human approval before running (needs_approval)." if a.get("guard_kind") == "human_approval"
+                      else " A recognised allowlist/validation guard constrains the parameter.")
         who = "the MCP client model" if entry_kind == "mcp_server" else "the model"
         return f"Tool parameter ({params}) controls the target of a {cat.lower()} that {who} can invoke.{suffix}"
     if cls == BOUND_CAPABILITY:
@@ -107,6 +111,7 @@ def _ev(edges: list[Edge]) -> list[dict[str, Any]]:
 def _make_path(g: EvidenceGraph, entry: str | None, entry_kind: str, chain: list[Edge], tool_id: str, op_edge: Edge | None,
                untrusted_edges: list[Edge], user_edges: list[Edge], provenance: str, bound: bool) -> dict[str, Any]:
     tool = g.nodes[tool_id]
+    delegates = [e.target for e in chain if e.type == "DELEGATES_TO"]
     binding_res = max((e.resolution for e in chain), key=lambda r: {CONFIRMED: 0, INFERRED: 1, UNKNOWN: 2, UNSUPPORTED: 3}[r], default=CONFIRMED)
     untrusted = bool(untrusted_edges)
     if op_edge is None:
@@ -120,6 +125,8 @@ def _make_path(g: EvidenceGraph, entry: str | None, entry_kind: str, chain: list
         op_node = g.nodes[op_edge.target]
     if cls == POTENTIALLY_EXPOSED and binding_res == INFERRED:
         unknowns = unknowns + ["path relies on an inferred binding"]
+    if delegates:
+        unknowns = unknowns + [f"reached via delegation to {', '.join(g.nodes[d].name for d in delegates)}; the sub-agent's own instructions may constrain or refuse the call"]
     edges = list(untrusted_edges) + chain + ([op_edge] if op_edge else [])
     resource_edges = g.out_edges(op_edge.target) if op_edge else []
     edges += [e for e in resource_edges if e.type in ("WRITES_TO", "READS_FROM")]
@@ -128,7 +135,7 @@ def _make_path(g: EvidenceGraph, entry: str | None, entry_kind: str, chain: list
         for n in (e.source, e.target):
             if n not in nodes:
                 nodes.append(n)
-    key = f"{entry or '-'}|{tool_id}|{op_edge.target if op_edge else '-'}|{op_edge.key if op_edge else ''}"
+    key = f"{entry or '-'}{''.join('>' + d for d in delegates)}|{tool_id}|{op_edge.target if op_edge else '-'}|{op_edge.key if op_edge else ''}"
     guard = a.get("guard_status", GUARD_NA) if op_edge and a.get("target_controlled") else GUARD_NA
     severity = SEVERITY[cls]
     if cls == OPERATION_PATH and guard == GUARD_KNOWN:
@@ -136,7 +143,7 @@ def _make_path(g: EvidenceGraph, entry: str | None, entry_kind: str, chain: list
     resolution = CONFIRMED
     if cls == PATH_UNKNOWN:
         resolution = UNKNOWN
-    elif binding_res == INFERRED or (op_edge is not None and op_edge.resolution == INFERRED) or provenance == "unknown":
+    elif binding_res == INFERRED or (op_edge is not None and op_edge.resolution == INFERRED) or provenance == "unknown" or delegates:
         resolution = INFERRED
     return {
         "id": short_id("path", key),
@@ -160,11 +167,13 @@ def _make_path(g: EvidenceGraph, entry: str | None, entry_kind: str, chain: list
         "controlling_params": a.get("controlling_params", []),
         "content_params": a.get("content_params", []),
         "guard_status": guard,
+        "guard_kind": a.get("guard_kind") if guard != GUARD_NA else None,
         "untrusted_privileged_input": untrusted,
         "untrusted_sources": sorted({e.attributes.get("source_kind", "") for e in untrusted_edges}),
         "user_role_untrusted_input": bool(user_edges),
         "instructions_provenance": provenance,
         "via": a.get("via", []),
+        "delegation": [g.nodes[d].name for d in delegates],
         "nodes": nodes,
         "edges": [{"source": e.source, "target": e.target, "type": e.type, "resolution": e.resolution} for e in edges],
         "exposure_reason": _reason(cls, a, untrusted, entry_kind),
@@ -183,6 +192,22 @@ def compute_paths(g: EvidenceGraph) -> list[dict[str, Any]]:
         user_edges = [e for e in g.in_edges(agent.id, "FLOWS_TO") if e.attributes.get("role") == "user_message"]
         provenance = agent.attributes.get("instructions_provenance", "unknown")
         chains: list[tuple[list[Edge], str]] = [([e], e.target) for e in g.out_edges(agent.id, "BINDS_TOOL")]
+        # follow delegation (handoffs / as_tool) up to MAX_DELEGATION hops, cycle-safe
+        frontier: list[tuple[list[Edge], str]] = [([], agent.id)]
+        seen = {agent.id}
+        for _hop in range(MAX_DELEGATION):
+            nxt = []
+            for prefix, src in frontier:
+                for d in g.out_edges(src, "DELEGATES_TO"):
+                    if d.target in seen:
+                        continue
+                    seen.add(d.target)
+                    pre = prefix + [d]
+                    chains += [(pre + [e], e.target) for e in g.out_edges(d.target, "BINDS_TOOL")]
+                    for c in g.out_edges(d.target, "CONNECTS_MCP"):
+                        chains += [(pre + [c, e], e.target) for e in g.out_edges(c.target, "EXPOSES_TOOL")]
+                    nxt.append((pre, d.target))
+            frontier = nxt
         for c in g.out_edges(agent.id, "CONNECTS_MCP"):
             exposed = g.out_edges(c.target, "EXPOSES_TOOL")
             if not exposed:

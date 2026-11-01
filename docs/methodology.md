@@ -7,6 +7,10 @@
 - **Bindings**: `tools=` elements are resolved through local variables, module constants, imports, re-exports, `+` concatenation, `*` unpacking and wrapper calls. A function that is bound but has no decorator is still analysed, with `inferred_limited`. Library tool objects (such as `WebSearchTool()`) become `unsupported`. Anything else becomes `unknown`.
 - **MCP**: `MCPServerStdio(params={"command": ..., "args": [... "server.py"]})` is resolved to a FastMCP/MCPServer instance in that file. The result is `CONNECTS_MCP` with resolution `inferred_limited`. Remote or unresolvable servers become `unknown`.
 
+- **Delegation**: `handoffs=[a, handoff(b)]` and `tools=[c.as_tool(...)]` become `DELEGATES_TO` edges (`mode=handoff|as_tool`). Agent references are resolved through local variables, module variables, imports, inline `Agent(...)` and factory functions that return an agent. Paths are propagated through at most 2 delegation hops, deduplicated, keep the *delegating* agent's trust status, and are marked `inferred_limited`.
+- **Library tools** (`analyzers/operations.py: LIBRARY_TOOLS`, `LIBRARY_TOOLKITS`): modelled from documented behaviour as a parameter-controlled operation on `<model-supplied>` arguments, with `inferred_limited` and scope `library_behaviour_model`. `FileManagementToolkit(selected_tools=[...]).get_tools()` is expanded and filtered by `selected_tools` when that is a literal.
+- **Hosted tools**: provider-hosted tools, and `ShellTool(environment={"type": "container_auto"|"container_reference"})`, are bound with no host operation. A non-literal `environment` gives `unknown`.
+
 ## 2. Taint and trust flow (bounded, deterministic)
 
 Each tool function is walked statement by statement. Tool parameters start as tainted (`param:<name>`). Taint propagates through assignments, f-strings, `+`, `%`/`.format` on tainted receivers, containers, comprehensions and method calls on tainted objects.
@@ -17,7 +21,9 @@ Each tool function is walked statement by statement. Tool parameters start as ta
   - `known`: `x in/not in <untainted>`, `x == / != <untainted>`, `re.fullmatch/re.match(p, x)`, compiled `P.fullmatch(x)`, and `x.isalnum()/isdigit()/isidentifier()/…`.
   - `unknown`: any other predicate over a tainted variable, such as a project validator or `startswith`.
   - A guard only applies where the control flow ensures it, for example `if x not in A: return` followed by the sink.
-- **Helpers**: calls into project functions are followed with argument→parameter taint mapping, up to `--max-depth` hops (default 3). Cycles are cut. Hitting the depth limit yields a `dynamic_dispatch` operation with `resolution=unknown`.
+- **Helpers**: calls into project functions are followed with argument→parameter taint mapping, up to `--max-depth` hops (default 3). Cycles are cut. Hitting the depth limit yields a `dynamic_dispatch` operation with `resolution=unknown`, but only if a syntactic over-approximation (any recognised sink call reachable through project functions, or methods of the same name, within a 40-function budget) says a sink could lie beyond the limit.
+- **Receivers**: method calls are followed when the receiver type is inferred: `x = Cls()`, `Cls().m()`, `self.m()` inside `Cls`, and `self.attr.m()` where `self.attr = ...` is assigned in one of `Cls`'s methods (for example a `boto3` client or another project class).
+- **Human approval**: `@function_tool(needs_approval=True)` or `ShellTool(needs_approval=True)` makes the guard `known` (`guard_kind=human_approval`). A non-literal `needs_approval` gives `unknown`.
 - **Dynamic dispatch**: `getattr(...)()`, `table[x]()`, `importlib.import_module` and `__import__` yield `unknown`.
 
 Agent instructions are evaluated in the enclosing function. Untrusted sources are:

@@ -22,6 +22,7 @@ BUILTIN_NAMES = frozenset(dir(builtins))
 
 AGENT_CTORS = {"agents.Agent", "agents.agent.Agent"}
 LANGGRAPH_AGENT_CTORS = {"langgraph.prebuilt.create_react_agent", "langgraph.prebuilt.chat_agent_executor.create_react_agent"}
+HANDOFF_FUNCS = {"agents.handoff", "agents.handoffs.handoff"}
 RUNNER_FUNCS = {
     f"agents.{cls}.{m}" for cls in ("Runner", "run.Runner") for m in ("run", "run_sync", "run_streamed")
 }
@@ -236,6 +237,21 @@ class ProjectIndex:
                 tail = rest[len(head):]
                 return self.lookup_function(target + tail, _depth + 1)
             return None
+        return None
+
+    def lookup_class(self, qual: str | None) -> tuple[ModuleInfo, str] | None:
+        if not qual or "." not in qual:
+            return None
+        modpart, name = qual.rsplit(".", 1)
+        m = self.resolve_module(modpart)
+        if m is None:
+            return None
+        if name in m.classes:
+            return m, name
+        if name in m.imports:
+            im, ia = m.imports[name]
+            if ia and f"{im}.{ia}" != qual:
+                return self.lookup_class(f"{im}.{ia}")
         return None
 
     def lookup_module_var(self, qual: str | None) -> tuple[ModuleInfo, ast.expr] | None:
