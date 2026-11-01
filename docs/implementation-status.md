@@ -109,6 +109,14 @@ The remaining oa unknowns are 11 library tool instances that are not modelled, 1
 6. **Missing `needs_approval` guard.** The SDK's human-in-the-loop flag was ignored, which overstated severity for all 4 local shell agents. It is now modelled as a guard.
 7. **Depth-limit noise.** After receiver typing, depth-limit unknowns on python-sdk rose from 6 to 22. Reachability pre-filtering brought them down to 4.
 
+## Local web GUI (branch `feat/web-gui`)
+
+`agentic-bom serve` (alias `gui`) runs a stdlib-only local server with Scan, Compare (folders or git revisions) and Demo forms, a server-side folder picker, session run history, report viewing and artefact downloads.
+
+- Security: loopback-only bind (anything else is refused); Host-header allowlist against DNS rebinding; per-process token exchanged for an HttpOnly SameSite=Strict cookie; a CSRF header plus same-origin check on every POST; JSON-only bodies of at most 64 KB; strict CSP (`default-src 'none'`, no eval); reports in an `allow-scripts`-only sandboxed iframe; errors return the exception class only, never a traceback.
+- Verified with `tests/integration/test_web_gui.py` (8 tests over real HTTP) and a headless Chrome walkthrough: demo, report drawer, folder picker, compare, input-validation error, local scan, download. The only browser console error was the intentional 400 from the invalid-URL test.
+- Limits: run history is in memory only (last 50 runs, lost on restart). Analyses run one at a time with no cancel button. There is no progress bar for long GitHub clones.
+
 ## Not done / next steps
 
 - TypeScript detector (Vercel AI SDK, OpenAI Agents TS). Not started.

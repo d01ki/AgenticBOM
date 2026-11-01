@@ -257,7 +257,40 @@ def build_parser() -> argparse.ArgumentParser:
     e.add_argument("finding_id")
     e.add_argument("--report", required=True)
     e.set_defaults(func=cmd_explain)
+
+    g = sub.add_parser("serve", aliases=["gui"], help="start the local web GUI (loopback only)")
+    g.add_argument("--host", choices=("127.0.0.1", "localhost", "::1"), default="127.0.0.1")
+    g.add_argument("--port", type=int, default=8765, help="0 picks a free port")
+    g.add_argument("--examples-dir", help="bundled demo scenarios (default: repository examples/)")
+    g.add_argument("--no-browser", action="store_true", help="do not open a browser window")
+    g.set_defaults(func=cmd_serve)
     return p
+
+
+def cmd_serve(a: argparse.Namespace) -> int:
+    import webbrowser
+
+    from agentic_bom.web.server import gui_url, make_server
+
+    ex = Path(a.examples_dir) if a.examples_dir else _repo_root() / "examples"
+    try:
+        srv = make_server(a.host, a.port, ex if ex.is_dir() else None)
+    except OSError as exc:
+        print(f"error: cannot listen on {a.host}:{a.port} ({exc.strerror or exc}); try --port 0", file=sys.stderr)
+        return 2
+    url = gui_url(srv)
+    print("Agentic Exposure Mapper GUI (static analysis only; bound to loopback)")
+    print(f"  open: {url}")
+    print("  the URL contains a one-session access token; do not share it. Ctrl+C to stop.")
+    if not a.no_browser:
+        webbrowser.open(url)
+    try:
+        srv.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        srv.server_close()
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:

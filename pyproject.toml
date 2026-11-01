@@ -21,7 +21,7 @@ agentic-bom = "agentic_bom.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-agentic_bom = ["schemas/*.json", "web/*.html", "web/*.js", "web/*.css"]
+agentic_bom = ["schemas/*.json", "web/*.html"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
